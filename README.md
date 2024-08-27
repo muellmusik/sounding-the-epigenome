@@ -17,5 +17,3 @@
 [$ meteor run]
 
 * Go to http://localhost:[port] in your browser window.
-
-=============================================================
