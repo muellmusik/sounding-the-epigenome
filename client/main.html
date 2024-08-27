@@ -1,0 +1,313 @@
+<head>
+  <title>StEg App</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+  {{> StEg_app}} 
+</body>
+
+<template name="StEg_app">
+  <div class="container-fluid p-3 text-center">
+    <!--
+    <div class="row justify-content-center">
+      <div class="col-md-7 m-1 border border-2 rounded border-dark-subtle">
+        <h1 style="text-align: center; margin-top: 1%;">Load/Parse Data File</h1>
+      <div class="row p-1">
+        <div class="input-group" style="width: auto;">
+          <input type="file" class="form-control m-2" id="fileInput" accept=".csv,.tsv,.txt">
+        </div>
+      </div>
+    <button class="btn btn-primary m-2" type="button" id="reset">Reset</button>
+    </div>
+    </div>
+    -->
+
+    <div class="row mt-2 justify-content-center">
+      <div class="col-md-12 m-1 border border-2 rounded border-dark-subtle">
+        <div class="row mt-3">
+          <div class="col-md-3 text-start">
+            <div class="input-group-sm mb-2">
+              <label for="row-select"><b>Select Row:</b></label>
+              <select class="form-select mt-2" id="row-select">
+                {{#each row in allRows }}
+                <option value="{{ row.name }}">Row #{{ row.name }}</option>
+                {{ /each }}
+              </select>
+            </div>
+          </div>
+          <div class="col-md-3 text-start">
+            <label for="num-rows-select"><b>No. of consecutive rows:</b></label>
+            <div class="input-group-sm text-start mb-2" style="width: 14vw;">
+            <select class="form-select mt-2" id="num-rows-select">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+            </div>
+          </div>
+          <div class="col-md-4 offset-md-2 text-start">
+            <label for="fileInput"><b>Load data file:</b><em style="font-size:x-small;"> (.csv,.tsv,.txt)</em></label>
+            <div class="input-group-sm text-end">
+              <input type="file" class="form-control mt-2" id="fileInput" accept=".csv,.tsv,.txt" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+              <button class="btn btn-outline-secondary mt-2" type="button" id="reset">Reset</button>
+            </div>
+          </div>
+        </div>
+    
+        <div class="row mt-3 mb-2 mt-4 justify-content-start">
+          <div class="col-md-3 text-start">
+            <div class="btn-group" role="group" style="margin-bottom: 5%;">
+              <button class="play btn btn-warning btn-lg" title="Play"><i class="fa fa-play"></i></button>
+              <button class="stop btn btn-warning btn-lg" title="Stop"><i class="fa fa-stop"></i></button>
+              <button class="store btn btn-warning btn-lg" title="Store"><i class="fa fa-plus"></i></button>
+            </div>
+          </div>
+          <div class="col-md-3 offset-md-2 mb-2 text-start">
+            <div class="radio">
+              <label for="chord"><input type="radio" name="chordOrSeq" id="chord" checked="" data-type="chordbutton"> chord</label>
+            </div>
+            <div class="radio">
+              <label for="sequence"><input type="radio" name="chordOrSeq" id="sequence" data-type="chordbutton"> sequence</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="input-group-sm">
+              <select class="form-select" id="synthtype-select">
+                {{ #each type in synthTypes }}
+                <option value="{{ type }}">Synth type: {{ type }}</option>
+                {{ /each }}
+              </select>
+              </div>
+          </div>
+        </div>
+    
+        <div class="row">
+          <div class="col-md-7">
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered table-striped" id="matrix-table">
+                 <thead class="thead-light">
+                   <tr class="text-center">
+                     <th></th>
+                     {{ #each field in listParams }}
+                     <th>{{ field }}</th>
+                     {{ /each }}
+                   </tr>
+                  </thead>
+                  <tbody>
+                    {{#each dataSet in getSonificationData }} <!-- datasets are the collective number of rows imported for sonification from parsed data-->
+                    <tr class="text-center">
+                      <th colspan="1" class="table-warning" style="background-color: #ffeeba; left: 0px;">
+                          Row {{dataSet.Row}}
+                      </th>
+                    </tr>
+                    {{#each element in dataSet.Data}}<!-- element is each *individual* row-->
+                    {{#each blah in (makeKeyValueArray element.type element.data) }}
+                    {{#each pair in (getAllFields blah)}}<!-- type dependant key-value pairs-->
+                    <tr class="text-center">
+                       <td><b> {{ pair.label}} </b><br/>{{ pair.value }}</td>
+                       {{#each field in listParams }}
+                       <td>
+                         <input type="radio" name="{{ field }}-{{ dataSet.Row }}" class="{{ field }}" value="{{ pair.value }}" checked=""
+                          id="{{dataSet.Row}}-{{ pair.label }}-{{ field }}" data-type="matrixbutton" data-key="{{ pair.label }}" data-field="{{ field }}" data-element="{{dataSet.Row}}" />
+                       </td>
+                       {{/each }}
+                    </tr>
+                      {{/each}}
+                      {{/each}}
+                      {{/each}}
+                      {{/each}}
+                  </tbody>
+                </table>
+                
+              </div>
+            </div>  <!-- End of column 1 -->
+      
+          <div class="col-md-5">
+            <div class="table-responsive">
+               <table class="table table-bordered table-striped table-sm" id="ranges-table">
+                <thead class="thead-light">
+                  <tr class="text-center">
+                    {{ #each field in listParams }}
+                    <th>{{ field }}</th>
+                    {{ /each }}
+                  </tr>
+                </thead>
+                <tbody>
+                     <tr class="text-center">
+                        <td><span id="attack-low"></span></td>
+                        <td><span id="decay-low"></span></td>
+                        <td><span id="sustain-low"></span></td>
+                        <td><span id="release-low"></span></td>
+                        <td><span id="detune-low"></span></td>
+                        <td><span id="midinote-low"></span></td>
+                        <td><span id="duration-low"></span></td>
+                      </tr>
+                      <tr class="text-center">
+                        <td><div id="attack"></div></td>
+                        <td><div id="decay"></div></td>
+                        <td><div id="sustain"></div></td>
+                        <td><div id="release"></div></td>
+                        <td><div id="detune"></div></td>
+                        <td><div id="midinote"></div></td>
+                        <td><div id="duration"></div></td>
+                      </tr>
+                      <tr class="text-center">
+                        <td><span id="attack-high"></span></td>
+                        <td><span id="decay-high"></span></td>
+                        <td><span id="sustain-high"></span></td>
+                        <td><span id="release-high"></span></td>
+                        <td><span id="detune-high"></span></td>
+                        <td><span id="midinote-high"></span></td>
+                        <td><span id="duration-high"></span></td>
+                      </tr>
+                  </tbody>
+              </table>
+            </div>
+            <div class="table-responsive">
+               <table class="table table-sm table-bordered" id="playback-table" style="margin-top: 1px; background:white;">
+                 <tbody>
+                  <tr>
+                      <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell1" data-type="playbutton" data-playind="0">1</button></td>
+                      <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell2" data-type="playbutton" data-playind="1">2</button></td>
+                      <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell3" data-type="playbutton" data-playind="2">3</button></td>
+                  </tr>
+                  <tr>
+                     <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell4" data-type="playbutton" data-playind="3">4</button></td>
+                     <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell5" data-type="playbutton" data-playind="4">5</button></td>
+                     <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell6" data-type="playbutton" data-playind="5">6</button></td>
+                  </tr>
+                  <tr>
+                     <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell7" data-type="playbutton" data-playind="6">7</button></td>
+                     <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell8" data-type="playbutton" data-playind="7">8</button></td>
+                     <td class="text-center"><button type="button" class="btn btn-warning btn-lg" id="cell9" data-type="playbutton" data-playind="8">9</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      </div>
+    
+    </div>
+
+  <!-- Load/Parse Dialog Modal-->  
+
+  <div class="modal fade" id="colselect" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">Select columns to import</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="max-height:45vh;overflow:auto;">
+          <div class="container">
+            <div id="columnSelector">
+              <form id="columnsForm">
+                {{#each columnOptions}}
+                <div>
+                  <input class="form-check-input" type="checkbox" name="columnchecks" id="col{{@index}}" value="{{@index}}">
+                  <label class="form-check-label" for="col{{@index}}">{{this}}</label>
+                </div>
+                {{/each}}
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="container border border-1 rounded border-dark-subtle">
+            <div class="container text-center py-1">
+              <div class="row justify-content-between mt-1">
+                <div class="col-5">
+                  <div class="form-check text-start">
+                    <input class="form-check-input" type="checkbox" id="checkall">
+                    <label class="form-check-label" for="checkall">Select All</label>
+                  </div>
+                </div>
+                <div class="col-5 text-end">
+                  <div class="form-check text-start">
+                    <input class="form-check-input" type="checkbox" id="selhdrs">
+                    <label class="form-check-label" for="selhdrs">Use As Headers</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="container text-center" id="rowRangeContainer" style="display:none;">
+              <div class="row mb-2 py-3">
+                <label for="slider" style="margin-bottom: 2%;">Select rows to import:</label>
+                <div id="slider"></div>
+              </div>
+              <div class="row justify-content-between mt-1 py-2">
+                <div class="col-5 p-0">
+                  <label for="startRowInput">Start Row:</label>
+                  <input type="number" id="startRowInput" min="1" style="width: 50%;">
+                </div>
+                <div class="col-5 p-0">
+                  <label for="endRowInput">End Row:</label>
+                  <input type="number" id="endRowInput" min="1" style="width: 50%;">
+                </div>
+              </div>
+            </div>
+            <div class="container">
+              <div class=" row mt-1 py-3">
+                <label for="keysInput" style="margin-bottom: 2%;">Define custom headers (comma-separated):</label>
+                <input type="text" id="keysInput" placeholder="e.g., name, val1, count,..." style="width: 80%;">
+              </div>
+              <div class=" row mb-3 mt-2 justify-content-center">
+                <div class="col-6 offset-md-3">
+                  <button class="btn btn-primary" data-bs-dismiss="modal" id="parse">Parse data</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- InMin/InMax Modal -->
+  <div class="modal fade" id="inminInmaxModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="inminInmaxModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="inminInmaxModalLabel">Load Options</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" style="max-height: 45vh;overflow:auto;">
+          <div class="container">
+            <div class="row justify-content-end m-2">
+              {{#if showOutput}}
+              <div class="col text-start mb-2 border border-1 rounded border-dark-subtle" id="outcon" style="max-height:35vh;overflow:auto;">
+                <pre>{{dictionary}}</pre>
+              </div>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="container border border-1 rounded border-dark-subtle">
+            <div class="row justify-content-center mb-2">
+              <div class="col-md-12 text-center">
+                <h1 class="modal-title fs-6" id="rangesinputlabel">Range Values for Numeric Data</h1>
+              </div>
+            </div>
+            <form id="inminInmaxForm">
+              <!-- Dynamic content will be inserted here -->
+            </form>
+            <div class="row mt-3 mb-3 justify-content-center">
+              <div class="col-md-4 text-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="submitInminInmax">Load</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
