@@ -8,7 +8,7 @@
 
     - Back-end changes: 
 
-        - Implemented file loading and parsing functionality on, i.e. the user can upload .csv, .tsv, .txt files, select preferred columns and number of rows to import, set input data min/max ranges, and load the parsed data for sonification. This runs through a combination of server-side [./server/main.js] and client-side [./client/main.jsx] processes.
+        - Implemented file loading and parsing functionality, i.e. the user can upload .csv, .tsv, .txt data files, select preferred columns and number of rows to import, set custom header labels for each column, input data min/max ranges, and load the parsed data for sonification. This runs through a combination of server-side [./server/main.js] and client-side [./client/main.jsx] processes.
 
         - Dynamic loading and modification of [./imports/data/data.js] per file upload and parsing by user.
 
