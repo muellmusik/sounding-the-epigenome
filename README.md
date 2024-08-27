@@ -15,7 +15,7 @@
 * Open a terminal window and install meteor through npm by running the command: 
 [$ npm install -g meteor]
 
-*  Clone the repository: 
+*  Clone the repository. (https://github.com/muellmusik/sounding-the-epigenome.git)
 
 * In your terminal window, navigate to the repository's root directory, and run the command: 'meteor run'
 
