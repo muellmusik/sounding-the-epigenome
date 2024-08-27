@@ -17,7 +17,8 @@
 
 *  Clone the repository. (https://github.com/muellmusik/sounding-the-epigenome.git)
 
-* In your terminal window, navigate to the repository's root directory, and run the command: 'meteor run'
+* In your terminal window, navigate to the repository's root directory, and run the command: 
+[$ meteor run]
 
 * Go to http://localhost:[port] in your browser window.
 
