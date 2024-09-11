@@ -1,5 +1,32 @@
 # Dev Log:
 
+* Milad Mardakheh (11/09/2024):
+
+    - Implemented looping
+
+    - Added Tempo-relative scaling of note durations
+
+    - Automatic detection of min/max ranges of parsed data
+
+    - Expanded the number of consecutive rows for sonification
+
+    - Adjusted the UI to display only one row for sonification of homogenous data.
+
+    TODO:
+
+    - Implement scales/modes
+
+    - Signal chain modular system - Major overhaul
+
+    - Adding other sound sources/instruments --> FM synth, Sampler
+
+    - Adding Audio FX capabilities --> Reverb, Feedback Delay, HPF, LPF, Distortion
+
+    - General UI overhaul
+
+    - Language switch/tab --> English/Español
+
+
 * Milad Mardakheh (27/08/2024):
 
     - Main changes:

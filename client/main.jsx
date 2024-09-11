@@ -55,12 +55,44 @@ if (Meteor.isClient) {
     this.activeRow       = new ReactiveVar();
     this.numRows         = new ReactiveVar(1);
 
+    this.loopPlayback = new ReactiveVar(false);  // Default state is looping off
+    this.tempo = new ReactiveVar(60);  // Default tempo
+    // this.synthArray = [];  // To store the synths
+    this.allSynths = [];
+    this.stopLoopFunction = null;  // Keep track of Transport state
+
     this.autorun(() => {
       // this will rerun each time its dependencies are changed (the ReactiveVar)
       const RowName   = this.activeRowName.get();
       const linkedRow = this.parsedata[ RowName ];
       this.activeRow.set( linkedRow );
       const numRows = this.numRows.get(); // Add numRows dependency for no. of consecutive rows
+      const loopEnabled = this.loopPlayback.get();
+
+      // Update the button's class and text based on the loop state
+      const loopButton = document.getElementById('loopButton');
+      if (loopButton)
+      {
+        if (loopEnabled) {
+          if (loopButton.classList.contains('btn-warning')) {
+            loopButton.classList.remove('btn-warning');
+          }
+          if (!loopButton.classList.contains('btn-success')) {
+            loopButton.classList.add('btn-success');
+          }
+          loopButton.innerHTML = '<i class="fa fa-repeat"></i>';
+        } 
+        else {
+          if (loopButton.classList.contains('btn-success')) {
+            loopButton.classList.remove('btn-success');
+          }
+          if (!loopButton.classList.contains('btn-warning')) {
+            loopButton.classList.add('btn-warning');
+          }
+          loopButton.innerHTML = '<i class="fa fa-repeat"></i>';
+    
+        }
+      }
     });
 
     this.state = {};
@@ -87,6 +119,13 @@ if (Meteor.isClient) {
 
     synthTypes: () => Template.instance().synthTypes,
 
+    getTempo:() => {
+      return Template.instance().tempo.get();
+    },
+    isLooping:() => {
+      return Template.instance().loopPlayback.get();
+    },
+
     getSonificationData: function() {
       
       const activeRow = Template.instance().activeRow.get();
@@ -94,9 +133,9 @@ if (Meteor.isClient) {
       const numRows = Template.instance().numRows.get();
       let sonificationData = [];
       const startIndex = allData.indexOf(activeRow);
-      console.log('startIndex',startIndex);
-      console.log('length',allData.length);
-      console.log('numRows',numRows);
+      console.log('Active Row:',startIndex);
+      console.log('Total Rows:',allData.length);
+      console.log('No. of Consecutive Rows:',numRows);
 
     
       for (let i = 0; i < numRows; i++) {
@@ -138,7 +177,7 @@ if (Meteor.isClient) {
       Object.keys(dataObject).forEach( function(theKey) {
         fields.push({label: theKey, value: dataObject[theKey] });
       });
-      console.log(fields);
+
       return fields;
     },
 
@@ -152,8 +191,14 @@ if (Meteor.isClient) {
           });
       }
 
-      console.log(DataArr);
       return DataArr;
+    },
+
+    maxnumRows: function() {
+      const allData = Template.instance().parsedata;
+      const activeRowIndex = allData.indexOf(Template.instance().activeRow.get());
+      const maxnumrows = (allData.length - 1) - activeRowIndex;
+      return maxnumrows;
     },
 
     incremented(index) { return (index + 1)},
@@ -252,9 +297,9 @@ if (Meteor.isClient) {
       const mappingFunctions = {};
 
       numericColumns.forEach((column) => {
-        const inmin = parseFloat(form.querySelector(`#inmin-${column.key}`).value);
-        const inmax = parseFloat(form.querySelector(`#inmax-${column.key}`).value);
-        mappingFunctions[column.key] = { inmin, inmax };
+        const inmin = parseFloat(form.querySelector(`#inmin-${column}`).value);
+        const inmax = parseFloat(form.querySelector(`#inmax-${column}`).value);
+        mappingFunctions[column] = { inmin, inmax };
       });
 
       // Save the mapping functions
@@ -284,11 +329,14 @@ if (Meteor.isClient) {
       instance.synthType = selectedElem.value;
     },
 
+    'change #tempoInput'(event, instance) {
+      const tempo = parseInt(event.currentTarget.value, 10);
+      instance.tempo.set(tempo);
+    },
+
     'click .play': function(event, instance) {
       var synthParameters = getSynthParamsFromGui(instance);
       var chordMode;
-
-      console.log(`synthpar `, synthParameters);
 
       if ($("#chord").prop("checked")) {
         chordMode = true;
@@ -297,7 +345,14 @@ if (Meteor.isClient) {
         chordMode = false;
       }
 
-      instance.synthArray = playSynths(synthParameters, instance.synthType, chordMode);
+      var loopEnabled = instance.loopPlayback.get();
+      if (loopEnabled){
+        instance.stopLoopFunction = playSynths(synthParameters, instance.synthType, chordMode, loopEnabled, instance);
+      }
+
+      else {
+        playSynths(synthParameters, instance.synthType, chordMode, loopEnabled, instance);
+      }
     },
 
     'click .store': function(event, instance) {
@@ -326,10 +381,69 @@ if (Meteor.isClient) {
     },
     
     'click .stop': function(event, instance) {
-      for (var s in instance.synthArray) {
-        var synth = instance.synthArray[s][0];
-        synth.triggerRelease();
+      if (instance.stopLoopFunction) {
+        instance.stopLoopFunction(); // Stop the loop if it's running
       }
+
+      let allsynths = instance.allSynths;
+      // Stop all playing synths
+      allsynths.forEach(synthArray => {
+        for (var s in synthArray) {
+        const synth = synthArray[s][0];
+        synth.triggerRelease();  // Release the note before disposal
+        setTimeout(function () {
+          synth.dispose();
+        }, synthArray[s][3]*1000+200);    
+      }
+      });
+
+      // Clear the array after stopping
+      instance.allSynths = [];
+    },
+
+    'click #loopButton'(event, instance) {
+
+      const currentLoopState = instance.loopPlayback.get();
+      instance.loopPlayback.set(!currentLoopState);
+      let allsynths = instance.allSynths;
+
+      if (currentLoopState){
+
+        if (instance.stopLoopFunction) {
+          instance.stopLoopFunction(); // Stop the loop when toggled off
+        }
+
+        allsynths.forEach(synthArray => {
+          for (var s in synthArray) {
+          const synth = synthArray[s][0];
+          synth.triggerRelease();
+          setTimeout(function () {
+            synth.dispose();
+          }, synthArray[s][3]*1000+200);
+         }
+        })
+      }
+      
+      setTimeout(() => {
+        const loopButton = document.getElementById('loopButton');
+        if (loopButton) {
+          if (!currentLoopState) {
+           
+            if (loopButton.classList.contains('btn-warning')) {
+              loopButton.classList.remove('btn-warning');
+            }
+            loopButton.classList.add('btn-success');
+            loopButton.innerHTML = '<i class="fa fa-repeat"></i>';
+          } else {
+           
+            if (loopButton.classList.contains('btn-success')) {
+              loopButton.classList.remove('btn-success');
+            }
+            loopButton.classList.add('btn-warning');
+            loopButton.innerHTML = '<i class="fa fa-repeat"></i>';
+          }
+        }
+      }, 200); 
     },
 
     "click [data-type='playbutton']": ( (event, instance) => {
@@ -353,10 +467,17 @@ if (Meteor.isClient) {
   // Helper functions
 
   function getSynthParamsFromGui(instance){
+
     var rbs = instance.findAll('input[type=radio]:checked');
     var checked = rbs.filter(function(rb) { return $(rb).attr('data-type') == "matrixbutton"})
-    console.log('checked',checked);
     var synthParameters = {};
+    const allData = instance.parsedata;
+    const numRows = instance.numRows.get();
+    const activeRowIndex = allData.indexOf(instance.activeRow.get());
+
+    var mappingInfo = []; //to store the current mapping
+
+    // scan radio button matrix for current mapping
 
     for ( var c in checked ) {
       var element = $(checked[c]).attr('data-element');
@@ -366,56 +487,104 @@ if (Meteor.isClient) {
       var par = $(checked[c]).attr('class');
       var datakey = $(checked[c]).attr('data-key');
       var fieldValue = $(checked[c]).attr('value');
+
+      mappingInfo.push({ par, datakey, fieldValue });
+
       synthParameters[element][par] = specs[datakey](fieldValue, Number(Session.get(par)[0]), Number(Session.get(par)[1]));
+
     }
+
+    // apply current mapping to the rest of the consecutive rows:
+
+    for (let i = 1; i < numRows; i++) {
+      const rowIndex = activeRowIndex + i;
+      if (rowIndex >= allData.length) break;
+      let currentElement = rowIndex.toString();
+      if (typeof synthParameters[currentElement] == 'undefined') {
+        synthParameters[currentElement] = {};
+      }
+
+      mappingInfo.forEach(({ par, datakey }) => {
+        const currentRowData = allData[rowIndex];  
+        const dataValue = currentRowData[datakey]; 
+  
+        synthParameters[currentElement][par] = specs[datakey](dataValue, Number(Session.get(par)[0]), Number(Session.get(par)[1]));
+      });
+    }
+
     return synthParameters;
+    
   }
 
-  function playSynths(synthParameters, synthType, chordMode) {
-    var synthArray = [];
+  function playSynths(synthParameters, synthType, chordMode, loop = false, instance) {
 
+    var synthArray = [];
+    var loopInterval;
+    var maxDur = 0.0;
+  
     console.log('synthParameters:', synthParameters);
 
+    const tempo = instance.tempo.get();
+    const qnDuration = 60 / tempo;
+  
+    function playSynthArray() {
+      var when = Tone.now();
+     
+      var start = when;
+      
+      for (var s in synthArray) {
+        var synth = synthArray[s][0];
+        var dur = synthArray[s][1] * qnDuration;
+        var note = synthArray[s][2];
+        synth.triggerAttackRelease(note, dur, when);
+        if (!chordMode) { when = when + dur; }
+        if (dur > maxDur) { maxDur = dur; }
+      }
+      
+      if ((when - start) > maxDur) { maxDur = when - start; }
+
+      if (!loop){
+        setTimeout(function() {
+          console.log("disposing");
+          for (var s in synthArray) { synthArray[s][0].dispose(); }
+        }, maxDur * 1500 + 1000);  // a little extra just in case
+      }
+    }
+  
     for (var element in synthParameters) {
       var params = synthParameters[element];
-      console.log(`params4synth `, params);
       var synth = new Tone.Synth({
-        "oscillator" : {
-          "type" : synthType,
-          "detune" : Number(params["detune"]),
-          "frequency" : Tone.Frequency(Number(params["midinote"]), "midi").toFrequency()
+        "oscillator": {
+          "type": synthType,
+          "detune": Number(params["detune"]),
+          "frequency": Tone.Frequency(Number(params["midinote"]), "midi").toFrequency()
         },
-        "envelope" : {
-          "attack" : Number(params["attack"]),
-          "decay" : Number(params["decay"]), //some values for 'decay' crash synth error: "not finite floting point value".
-          "sustain" : Number(params["sustain"]),
-          "release" : Number(params["release"])
+        "envelope": {
+          "attack": Number(params["attack"]),
+          "decay": Number(params["decay"]),
+          "sustain": Number(params["sustain"]),
+          "release": Number(params["release"])
         }
       }).toDestination();
-
-      synthArray.push([synth, Number(params["duration"]), Tone.Frequency(Number(params["midinote"]), "midi").toFrequency()]);
-    }
-    var when = Tone.now();
-    var maxDur = 0.0;
-    var start = when;
-    for (var s in synthArray) {
-      var synth = synthArray[s][0];
-      var dur = synthArray[s][1];
-      var note = synthArray[s][2];
-      console.log(`when `, when);
-      synth.triggerAttackRelease(note, dur, when);
-      if(!chordMode) { when = when + dur; }
-      if(dur > maxDur) {maxDur = dur};
+  
+      synthArray.push([synth, Number(params["duration"]), Tone.Frequency(Number(params["midinote"]), "midi").toFrequency(),maxDur]);
     }
 
-    // cleanup when done
-    if((when - start) > maxDur) { maxDur = when - start; }
-    setTimeout(function() {
-      console.log("disposing");
-      for (var s in synthArray) { synthArray[s][0].dispose(); }
-    }, maxDur * 1500);// a little extra just in case
-
-    return synthArray;
+    instance.allSynths.push(synthArray);
+  
+    // Start initial playback
+    playSynthArray();
+  
+    // Loop playback if loop is enabled
+    if (loop) {
+      loopInterval = setInterval(playSynthArray, maxDur * 1000); // Repeat after max duration
+    }
+  
+    return function stopLoop() {
+      if (loopInterval) {
+        clearInterval(loopInterval);
+      }
+    };
   }
 
   function parseColumns(content) {
@@ -458,31 +627,26 @@ if (Meteor.isClient) {
     const [startRow, endRow] = sliderInstance.get().map(Number);
 
     const newDictionary = [];
-    const numericColumns = [];
+    const numericColumnRanges = {}; // min/max values for numeric columns
 
-    const firstDataRow = rows.slice(useHeaders ? 1 : 0)[0];
-    const firstRowValues = parseCSVRow(firstDataRow, separator);
-
-    keys.forEach((key, index) => {
-      if (index < selectedColumns.length) {
-        const value = firstRowValues[selectedColumns[index]].trim();
-        const detectedValue = detectType(value);
-
-        // Collect numeric columns for further processing
-        if (typeof detectedValue === 'number') {
-          numericColumns.push({ key, value: detectedValue });
-        }
-      }
-    });
-
-    rows.slice(useHeaders ? 1 : 0).slice(startRow - 1, endRow).forEach((row) => {
+    rows.slice(useHeaders ? 1 : 0).slice(startRow - 1, endRow).forEach((row, rowIndex) => {
       const values = parseCSVRow(row, separator);
       let entry = {};
 
       keys.forEach((key, index) => {
         if (index < selectedColumns.length) {
-            let value = values[selectedColumns[index]].trim();
-            entry[key] = detectType(value);
+            let value = detectType(values[selectedColumns[index]].trim());
+            entry[key] = value;
+
+            // Check if this is a numeric column and calculate min/max
+            if (typeof value === 'number') {
+            if (!numericColumnRanges[key]) {
+              numericColumnRanges[key] = { min: value, max: value };
+            } else {
+              numericColumnRanges[key].min = Math.min(numericColumnRanges[key].min, value);
+              numericColumnRanges[key].max = Math.max(numericColumnRanges[key].max, value);
+            }
+          }
         }
       });
 
@@ -493,11 +657,11 @@ if (Meteor.isClient) {
     showOutput.set(true);
     
 
-    instance.numericColumns.set(numericColumns);
+    instance.numericColumns.set(Object.keys(numericColumnRanges));
 
     // Show inmin/inmax modal if there are numeric columns
-    if (numericColumns.length > 0) {
-      populateInminInmaxForm(numericColumns);
+    if (Object.keys(numericColumnRanges).length > 0) {
+      populateInminInmaxForm(numericColumnRanges); // Pass min/max ranges
       const inminInmaxModal = new bootstrap.Modal('#inminInmaxModal');
       inminInmaxModal.show();
     }
@@ -508,37 +672,25 @@ if (Meteor.isClient) {
 
   }
 
-  function populateInminInmaxForm(numericColumns) {
+  function populateInminInmaxForm(numericColumnRanges) {
+    
     const form = document.getElementById('inminInmaxForm');
     form.innerHTML = '<div class="row text-center mb-1"> <div class="col-3 mb-1 offset-md-5 "><b>Min:</b></div> <div class="col-3 mb-1"><b>Max:</b></div></div>'; // Clear any existing content
 
-    const dictionaryData = EJSON.parse(dictionary.get());
-
-    numericColumns.forEach((column) => {
-      
-      // Determine a sample value for the current column key
-      //let sampleValue = '';
-      //for (const entry of dictionaryData) {
-      //  if (entry.hasOwnProperty(column.key)) {
-      //    sampleValue = entry[column.key];
-      //    break; // Take the first sample found
-      //  }
-      // }
-
-      //const sampleDisplay = (typeof sampleValue === 'number') 
-        //? `(${sampleValue})` 
-        //: `(${EJSON.stringify(sampleValue)})`;
+    Object.keys(numericColumnRanges).forEach((key) => {
+      const minValue = numericColumnRanges[key].min;
+      const maxValue = numericColumnRanges[key].max;
 
       form.innerHTML += `
       <div class="row text-center py-1 mb-1">
         <div class="col-5 p-1">
-        <b>${column.key}</b>
+          <b>${key}</b>
         </div>  
         <div class="col-3">
-            <input type="number" class="form-control" id="inmin-${column.key}" value="0">
+          <input type="number" class="form-control form-control-sm" id="inmin-${key}" value="${minValue}">
         </div>
         <div class="col-3">
-          <input type="number" class="form-control" id="inmax-${column.key}" value="100">
+          <input type="number" class="form-control form-control-sm" id="inmax-${key}" value="${maxValue}">
         </div>
       </div>
       `;
