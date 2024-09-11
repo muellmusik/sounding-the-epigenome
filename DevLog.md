@@ -10,7 +10,7 @@
 
     - Expanded the number of consecutive rows for sonification
 
-    - Adjusted the UI to display only one row for sonification of homogenous data.
+    - Adjusted the UI and logic to display only one row for sonification of multiple rows homogenous data.
 
     TODO:
 
