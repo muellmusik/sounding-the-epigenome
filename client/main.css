@@ -1,80 +1,11 @@
-#attack {
+
+.rangeslider {
     position: sticky;
     height: 200px;
     width: 20px;
     padding: 0;
-    margin-top: 20%;
-    margin-bottom: 0%;
+    margin-top: 12px;
+    margin-bottom: 12px;
     display: inline-block;
     box-sizing: border-box;
 }
-
-#decay {
-    position: sticky;
-    height: 200px;
-    width: 20px;
-    padding: 0;
-    margin-top: 20%;
-    margin-bottom: 0%;
-    display: inline-block;
-    box-sizing: border-box;
-}
-
-#sustain {
-    position: sticky;
-    height: 200px;
-    width: 20px;
-    padding: 0;
-    margin-top: 20%;
-    margin-bottom: 0%;
-    display: inline-block;
-    box-sizing: border-box;
-}
-
-#release {
-    position: sticky;
-    height: 200px;
-    width: 20px;
-    padding: 0;
-    margin-top: 20%;
-    margin-bottom: 0%;
-    display: inline-block;
-    box-sizing: border-box;
-}
-
-#detune {
-    position: sticky;
-    height: 200px;
-    width: 20px;
-    padding: 0;
-    margin-top: 20%;
-    margin-bottom: 0%;
-    display: inline-block;
-    box-sizing: border-box;
-}
-
-#midinote {
-    position: sticky;
-    height: 200px;
-    width: 20px;
-    padding: 0;
-    margin-top: 20%;
-    margin-bottom: 0%;
-    display: inline-block;
-    box-sizing: border-box;
-}
-
-#duration {
-    position: sticky;
-    height: 200px;
-    width: 20px;
-    padding: 0;
-    margin-top: 20%;
-    margin-bottom: 0%;
-    display: inline-block;
-    box-sizing: border-box;
-}
-
-@import "node_modules/bootstrap/dist/css/bootstrap.css";
-
-
