@@ -1,5 +1,32 @@
 # Dev Log:
 
+* Milad Mardakheh (15/10/2024):
+
+    - Removed server-side code + ported file import/parsing functionality entirely to the client-side. No need for server operations.
+
+    - Added dataset switch:
+
+        The user can switch between pre-loaded, curated datasets, or upload their own
+
+    - Implemented Scales/Modes:
+
+        - Chromatic(default)
+        - Ionian
+        - Dorian
+        - Phrygian
+        - Lydian
+        - Mixolydian
+        - Aeolian
+        - Locrian
+
+    - Implemented Language switch (EN/ES) and relevant translations
+
+    - Improved preset loop function timing
+
+    - Added Keyboard key-mapping (number keys 1 - 9) to preset trigger/toggle 
+
+    - Code clean-up and bug fixes
+
 * Milad Mardakheh (29/09/2024):
 
     - Implemented signal chain modular system:
@@ -60,8 +87,8 @@
 
     TODO:
 
-    - Implement scales/modes
-    - Language switch/tab --> English/Español
+    - I̶m̶p̶l̶e̶m̶e̶n̶t̶ s̶c̶a̶l̶e̶s̶/̶m̶o̶d̶e̶s̶
+    - L̶a̶n̶g̶u̶a̶g̶e̶ s̶w̶i̶t̶c̶h̶/̶t̶a̶b̶ -̶-̶>̶ E̶n̶g̶l̶i̶s̶h̶/̶E̶s̶p̶a̶ñ̶o̶l̶
 
 
 * Milad Mardakheh (11/09/2024):
@@ -78,7 +105,7 @@
 
     TODO:
 
-    - Implement scales/modes
+    - I̶m̶p̶l̶e̶m̶e̶n̶t̶ s̶c̶a̶l̶e̶s̶/̶m̶o̶d̶e̶s̶
 
     - S̶i̶g̶n̶a̶l̶ c̶h̶a̶i̶n̶ m̶o̶d̶u̶l̶a̶r̶ s̶y̶s̶t̶e̶m̶ -̶ M̶a̶j̶o̶r̶ o̶v̶e̶r̶h̶a̶u̶l̶
 
@@ -88,7 +115,7 @@
 
     - G̶e̶n̶e̶r̶a̶l̶ U̶I̶ o̶v̶e̶r̶h̶a̶u̶l̶
 
-    - Language switch/tab --> English/Español
+    - L̶a̶n̶g̶u̶a̶g̶e̶ s̶w̶i̶t̶c̶h̶/̶t̶a̶b̶ -̶-̶>̶ E̶n̶g̶l̶i̶s̶h̶/̶E̶s̶p̶a̶ñ̶o̶l̶
 
 
 * Milad Mardakheh (27/08/2024):

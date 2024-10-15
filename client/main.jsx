@@ -2,9 +2,13 @@ import { Session } from 'meteor/session';
 import { Template } from 'meteor/templating';
 import { ReactiveVar } from 'meteor/reactive-var';
 import { EJSON } from 'meteor/ejson';
+import i18next from 'i18next';
+import './i18n.js';
 
 import specs from '../imports/specs/specs.js';
 import data from '../imports/data/data.js'
+import specs1 from '../imports/specs/specs1.js';
+import data1 from '../imports/data/data1.js'
 
 import 'bootstrap';
 import 'bootswatch/dist/solar/bootstrap.css';
@@ -23,34 +27,71 @@ import './main.html';
 import './sliders.js';
 import * as Audio from './audio.js';
 
+Template.registerHelper('t', function (key, options) {
+  Session.get('currentLanguage'); // Reactive dependency
+  return i18next.t(key, options.hash);
+});
+
 // Reactive variables to hold state
 const fileContent = new ReactiveVar('');
 const dictionary = new ReactiveVar([]);
 const showOutput = new ReactiveVar(false);
-const datadict = new ReactiveVar([]);
+const datadict = new ReactiveVar({});
 let sliderInstance;
+const scales = {
+  'Chromatic': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  'Ionian': [0, 2, 4, 5, 7, 9, 11],
+  'Dorian': [0, 2, 3, 5, 7, 9, 10],
+  'Phrygian': [0, 1, 3, 5, 7, 8, 10],
+  'Lydian': [0, 2, 4, 6, 7, 9, 11],
+  'Mixolydian': [0, 2, 4, 5, 7, 9, 10],
+  'Aeolian': [0, 2, 3, 5, 7, 8, 10],
+  'Locrian': [0, 1, 3, 5, 6, 8, 10],
+};
+
+const datasets = {
+  'Dataset 1': { data: data, specs: specs },
+  'Dataset 2': { data: data1, specs: specs1 },
+  'User Uploaded Data': { data: null, specs: null },
+  // Add additional datasets as needed
+};
+
+const datasetNames = Object.keys(datasets);
 
 if (Meteor.isClient) {
 
   Template.StEg_app.onCreated(function () {
 
+    i18next.changeLanguage('en');
+    Session.set('currentLanguage', 'en');
+
+    this.selectedDataset = new ReactiveVar('Dataset 1'); // Default dataset
+
     this.columnOptions = new ReactiveVar([]);
     this.numericColumns = new ReactiveVar([]);
 
+    this.specs = specs;
+
     this.listParams = new ReactiveVar(['midinote','duration','attack','decay','sustain','release','detune',]);
 
-    this.synthTypes = ['sine', 'square', 'triangle', 'sawtooth'];
+    this.selectedScale = new ReactiveVar('Chromatic');
 
-    this.parsedata = data;
+    this.parsedata = new ReactiveVar({});
+    const initialParsedData = {};
 
-    const defaultRowName = Object.keys( this.parsedata )[ 0 ];
+    Object.keys(data).forEach((key, index) => {
+      initialParsedData[index.toString()] = data[key];
+    });
+    this.parsedata.set(initialParsedData);
+
+    const defaultRowName = Object.keys(this.parsedata.get())[0];
     this.activeRowName   = new ReactiveVar( defaultRowName );
-    this.activeRow       = new ReactiveVar();
+    this.activeRow       = new ReactiveVar(this.parsedata.get()[defaultRowName]);
     this.numRows         = new ReactiveVar(1);
 
     this.loopPlayback = new ReactiveVar(false);  // Default state is looping off
     this.tempo = new ReactiveVar(60);  // Default tempo
-    // this.synthArray = [];  // To store the synths
+    
     this.allSynths = [];
     this.stopLoopFunction = null;  // Keep track of looping state
 
@@ -73,7 +114,7 @@ if (Meteor.isClient) {
     this.autorun(() => {
       // this will rerun each time its dependencies are changed (the ReactiveVar)
       const RowName   = this.activeRowName.get();
-      const linkedRow = this.parsedata[ RowName ];
+      const linkedRow = this.parsedata.get()[ RowName ];
       this.activeRow.set( linkedRow );
       const numRows = this.numRows.get(); // Add numRows dependency for no. of consecutive rows
       const loopEnabled = this.loopPlayback.get();
@@ -106,16 +147,226 @@ if (Meteor.isClient) {
   });
 
   Template.StEg_app.onRendered(function () {
-    new TomSelect('#instrument-select', {placeholder:'Select Instrument'}); 
-    new TomSelect('#effects-select', {plugins:['remove_button','clear_button'], hideSelected:false, hidePlaceholder: true});
+
+    const instance = this;
+
+    instance.instrumentOptions = [
+      { value: 'Synth', translationKey: 'Oscillator' },
+      { value: 'FMSynth', translationKey: 'FM-Synth' },
+      { value: 'MembraneSynth', translationKey: 'Membrane-Synth' },
+      { value: 'MetalSynth', translationKey: 'Metal-Synth' },
+      { value: 'PluckSynth', translationKey: 'Pluck-Synth' },
+      { value: 'Sampler', translationKey: 'Piano' },
+    ];
+
+    instance.instrumentSelectInstance = new TomSelect('#instrument-select', {
+      options: instance.instrumentOptions,
+      valueField: 'value',
+      render: {
+        option: function (data, escape) {
+          const label = i18next.t('instrumentOptions.' + data.translationKey);
+          return '<div>' + escape(label) + '</div>';
+        },
+        item: function (data, escape) {
+          const label = i18next.t('instrumentOptions.' + data.translationKey);
+          return '<div>' + escape(label) + '</div>';
+        },
+      },
+    });
+
+    const selectedInstrument = instance.instrumentType.get() || 'Synth';
+    instance.instrumentSelectInstance.setValue(selectedInstrument);
+
+    instance.effectsOptions = [
+      { value: 'Reverb' },
+      { value: 'Delay' },
+      { value: 'Distortion' },
+      { value: 'Chorus' },
+      { value: 'Tremolo' },
+      { value: 'LowPassFilter' },
+      { value: 'Panner' },
+    ];
+
+    instance.effectsSelectInstance = new TomSelect('#effects-select', {
+      plugins: ['remove_button', 'clear_button'],
+      hideSelected: false,
+      hidePlaceholder: true,
+      options: instance.effectsOptions,
+      placeholder: i18next.t('selectEffectsPlaceholder'),
+      render: {
+        option: function (data, escape) {
+          const label = i18next.t('effectOptions.' + data.value);
+          return '<div>' + escape(label) + '</div>';
+        },
+        item: function (data, escape) {
+          const label = i18next.t('effectOptions.' + data.value);
+          return '<div>' + escape(label) + '</div>';
+        },
+      },
+    });
+
+    const selectedEffects = instance.selectedEffects.get() || [];
+    instance.effectsSelectInstance.setValue(selectedEffects);
     
+    new TomSelect('#scale-select',{placeholder:'Select Scale'});
+
+    const currentLanguage = i18next.language || 'en';
+    if (currentLanguage === 'en') {
+      $('#lang-en').removeClass('btn-warning').addClass('btn-success');
+      $('#lang-es').removeClass('btn-success').addClass('btn-warning');
+    } else {
+      $('#lang-es').removeClass('btn-warning').addClass('btn-success');
+      $('#lang-en').removeClass('btn-success').addClass('btn-warning');
+    }
+
+    this.autorun(() => {
+      Session.get('currentLanguage'); // Reactive dependency
+      // Update instrument-select options
+
+      const selectedInstrument = instance.instrumentSelectInstance.getValue();
+      const selectedEffects = instance.effectsSelectInstance.getValue() || [];
+
+      instance.effectsSelectInstance.settings.placeholder = i18next.t('selectEffectsPlaceholder');
+      instance.effectsSelectInstance.control_input.setAttribute('placeholder', i18next.t('selectEffectsPlaceholder'));
+
+      instance.instrumentSelectInstance.clearCache();
+      instance.instrumentSelectInstance.refreshOptions(false);
+      instance.instrumentSelectInstance.refreshItems();
+
+      instance.effectsSelectInstance.clearCache();
+      instance.effectsSelectInstance.refreshOptions(false);
+      instance.effectsSelectInstance.refreshItems();
+
+      instance.instrumentSelectInstance.clear(true);
+      instance.instrumentSelectInstance.addItem(selectedInstrument);
+     
+      instance.effectsSelectInstance.clear(false);
+      // selectedEffects.forEach(effect => {
+      //   instance.effectsSelectInstance.addItem(effect);
+      // });
+    });
+
+    //Keyboard-preset mapping
+
+    $(document).on('keydown', function (event) {
+      if ($(event.target).is('input, textarea')) {
+        return; // Don't intercept key presses in input fields
+      }
+      const key = event.key;
+      switch (key) {
+        case '1':
+          triggerPreset(1);
+          break;
+        case '2':
+          triggerPreset(2);
+          break;
+        case '3':
+          triggerPreset(3);
+          break;
+        case '4':
+          triggerPreset(4);
+          break;
+        case '5':
+          triggerPreset(5);
+          break;
+        case '6':
+          triggerPreset(6);
+          break;
+        case '7':
+          triggerPreset(7);
+          break;
+        case '8':
+          triggerPreset(8);
+          break;
+        case '9':
+          triggerPreset(9);
+          break;
+        default:
+          // Do nothing
+          break;
+      }
+    });
+
+    function selectLastRadioButtons() {
+      const radioGroups = new Set();
+      instance.$('input[type="radio"][data-type="matrixbutton"]').each(function () {
+        radioGroups.add($(this).attr('name'));
+      });
+  
+      
+      radioGroups.forEach((groupName) => {
+        const radios = instance.$(`input[name="${groupName}"]`);
+        radios.prop('checked', false); 
+        radios.last().prop('checked', true);
+      });
+    }
+
+    selectLastRadioButtons();
+
+    this.autorun(() => {
+      instance.parsedata.get();
+      Meteor.defer(() => {
+        selectLastRadioButtons();
+      });
+    });
+
   });
 
   Template.OscillatorTypeSelect.onRendered(function () {
-    new TomSelect('#synthtype-select',{placeholder:'Oscillator Type'});
+    const instance = this;
+  
+    instance.synthTypeOptions = [
+      { value: 'sine' },
+      { value: 'square' },
+      { value: 'triangle' },
+      { value: 'sawtooth' },
+    ];
+
+    instance.synthTypeSelectInstance = new TomSelect('#synthtype-select', {
+      options: instance.synthTypeOptions,
+      valueField: 'value',
+      render: {
+        option: function (data, escape) {
+          const label = i18next.t('synthTypeOptions.' + data.value);
+          return '<div>' + escape(label) + '</div>';
+        },
+        item: function (data, escape) {
+          const label = i18next.t('synthTypeOptions.' + data.value);
+          return '<div>' + escape(label) + '</div>';
+        },
+      },
+    });
+
+    let selectedSynthType = 'sine';
+
+    if (instance.data && instance.data.synthType) {
+      selectedSynthType = instance.data.synthType.get();
+    }
+
+    instance.synthTypeSelectInstance.setValue(selectedSynthType);
+
+    this.autorun(() => {
+      Session.get('currentLanguage'); // Reactive dependency
+      instance.synthTypeSelectInstance.clearCache();
+      instance.synthTypeSelectInstance.refreshOptions(false);
+      instance.synthTypeSelectInstance.refreshItems();
+
+      const selectedSynthType = instance.synthTypeSelectInstance.getValue();
+      instance.synthTypeSelectInstance.clear(true);
+      instance.synthTypeSelectInstance.addItem(selectedSynthType);
+    });
   });
 
   Template.StEg_app.helpers({
+
+    datasets: function () {
+      return datasetNames;
+    },
+
+    isSelectedDataset: function (datasetName) {
+      return Template.instance().selectedDataset.get() === datasetName ? 'selected' : '';
+    },
+
     columnOptions() {
       return Template.instance().columnOptions.get();
     },
@@ -125,9 +376,22 @@ if (Meteor.isClient) {
     showOutput() {
       return showOutput.get();
     },
-    listParams: () => Template.instance().listParams.get(),
+    listParams: function () {
+      Session.get('currentLanguage');
+      const params = Template.instance().listParams.get();
+      return params.map(param => {
+        return {
+          key: param,
+          label: i18next.t(`parameterLabels.${param}`)
+        };
+      });
+    },
 
     synthTypes: () => Template.instance().synthTypes,
+    
+    synthType() {
+      return Template.instance().synthType;
+    },
 
     getTempo:() => {
       return Template.instance().tempo.get();
@@ -142,23 +406,23 @@ if (Meteor.isClient) {
 
     getSonificationData: function() {
       
-      const activeRow = Template.instance().activeRow.get();
-      const allData = Template.instance().parsedata;
+      const allData = Template.instance().parsedata.get();
       const numRows = Template.instance().numRows.get();
-      let sonificationData = [];
-      const startIndex = allData.indexOf(activeRow);
-      console.log('Active Row:',startIndex);
-      console.log('Total Rows:',allData.length);
-      console.log('No. of Consecutive Rows:',numRows);
+      const activeRowName = Template.instance().activeRowName.get();
+      const rowKeys = Object.keys(allData);
+      const activeRowIndex = rowKeys.indexOf(activeRowName);
 
-    
+      let sonificationData = [];
+
       for (let i = 0; i < numRows; i++) {
-        const rowIndex = startIndex + i;
-        if (rowIndex >= allData.length) break;  // Prevent going out of bounds
-        const currentRow = allData[rowIndex];
+        const rowIndex = activeRowIndex + i;
+        if (rowIndex >= rowKeys.length) break;  // Prevent going out of bounds
+        
+        const currentRowKey = rowKeys[rowIndex];
+        const currentRow = allData[currentRowKey];
 
         let rowData = {
-          Row: rowIndex,
+          Row: currentRowKey,
           Data: []
         };
         
@@ -177,7 +441,6 @@ if (Meteor.isClient) {
         }
         sonificationData.push(rowData);
     }
-      console.log('sonificationData:',sonificationData);
       return sonificationData;
     },
 
@@ -197,6 +460,8 @@ if (Meteor.isClient) {
 
 
     allRows: function () {
+      
+      const data = Template.instance().parsedata.get();
       const DataArr = [];
 
       for (let Row in data) {
@@ -209,9 +474,11 @@ if (Meteor.isClient) {
     },
 
     maxnumRows: function() {
-      const allData = Template.instance().parsedata;
-      const activeRowIndex = allData.indexOf(Template.instance().activeRow.get());
-      const maxnumrows = (allData.length - 1) - activeRowIndex;
+      const allData = Template.instance().parsedata.get();
+      const rowKeys = Object.keys(allData);
+      const activeRowName = Template.instance().activeRowName.get();
+      const activeRowIndex = rowKeys.indexOf(activeRowName);
+      const maxnumrows = (rowKeys.length - activeRowIndex);
       return maxnumrows;
     },
 
@@ -221,16 +488,66 @@ if (Meteor.isClient) {
       return Template.instance().isStoringPreset.get();
     },
 
+    scales() {
+      return ['Chromatic', 'Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
+    },
+
+    selectedScale() {
+      return Template.instance().selectedScale.get();
+    },
+
+    translatedDatasetName: function(dataset) {
+      Session.get('currentLanguage');
+      return i18next.t('datasetOptions.' + dataset);
+    },
+
   });
 
   Template.StEg_app.events({
+
+    'change #dataset-select'(event, instance) {
+
+      const selectedValue = event.target.value;
+      instance.selectedDataset.set(selectedValue);
+
+      if (selectedValue === 'User Uploaded Data') {
+        if (!datasets['User Uploaded Data'].data || !datasets['User Uploaded Data'].specs) {
+          
+          alert(i18next.t('noUserUploadedDataAlert'));
+          const firstDataset = datasetNames[0];
+          instance.selectedDataset.set(firstDataset);
+          event.target.value = firstDataset;
+          event.target.dispatchEvent(new Event('change'));
+
+          return;
+        }
+      }
+      else {
+        instance.selectedDataset.set(selectedValue);
+      }
+      
+      const selectedData = datasets[selectedValue].data;
+      const selectedSpecs = datasets[selectedValue].specs;
+
+      instance.parsedata.set({ ...selectedData });
+
+      
+      const defaultRowName = Object.keys(selectedData)[0];
+      instance.activeRowName.set(defaultRowName);
+      instance.activeRow.set(selectedData[defaultRowName]);
+
+      instance.specs = selectedSpecs || {};
+      
+      showOutput.set(true);
+    },
+    
     'change #fileInput'(event, instance) {
       const file = event.target.files[0];
       if (file) {
 
         if (sliderInstance) {
           sliderInstance.destroy();
-          sliderInstance = null; // Clear the reference
+          sliderInstance = null;
         }
 
         const slhd = document.getElementById('selhdrs'); slhd.checked=false; slhd.dispatchEvent(new Event('change'));  
@@ -284,6 +601,23 @@ if (Meteor.isClient) {
         reader.readAsText(file);
       }
     },
+
+    'click #lang-en, click #lang-es'(event) {
+        const selectedLanguage = event.currentTarget.getAttribute('data-lang');
+        i18next.changeLanguage(selectedLanguage, (err, t) => {
+          if (err) return console.error('Error changing language', err);
+          Session.set('currentLanguage', selectedLanguage);
+          // Update button classes
+          if (selectedLanguage === 'en') {
+            $('#lang-en').removeClass('btn-warning').addClass('btn-success');
+            $('#lang-es').removeClass('btn-success').addClass('btn-warning');
+          } else {
+            $('#lang-es').removeClass('btn-warning').addClass('btn-success');
+            $('#lang-en').removeClass('btn-success').addClass('btn-warning');
+          }
+        });
+      },
+
     'change #checkall'(event) {
       const checkboxes = document.getElementsByName('columnchecks');
       checkboxes.forEach((checkbox) => {
@@ -320,10 +654,18 @@ if (Meteor.isClient) {
         mappingFunctions[column] = { inmin, inmax };
       });
 
-      // Save the mapping functions
-      saveMappingFunctions(mappingFunctions);
-      // export to Data.js File
-      exportToJSFile(datadict.get());
+      for (const key in mappingFunctions) {
+        const inmin = mappingFunctions[key].inmin;
+        const inmax = mappingFunctions[key].inmax;
+        specs[key] = ((inmin, inmax) => {
+          return function (val, outmin, outmax) {
+            return (((val - inmin) / (inmax - inmin)) * (outmax - outmin)) + outmin;
+          };
+        })(inmin, inmax);
+      }
+
+      datasets['User Uploaded Data'].specs = { ...specs };
+      instance.selectedDataset.set('User Uploaded Data');
       
       const modal = bootstrap.Modal.getInstance(document.getElementById('inminInmaxModal'));
       modal.hide();
@@ -363,6 +705,11 @@ if (Meteor.isClient) {
       const selectedEffects = Array.from(selectedOptions).map((option) => option.value);
       instance.selectedEffects.set(selectedEffects);
       updateListParams(instance);
+    },
+
+      'change #scale-select'(event, instance) {
+      const selectedScale = event.target.value;
+      instance.selectedScale.set(selectedScale);
     },
 
     'click .play': function(event, instance) {
@@ -409,8 +756,6 @@ if (Meteor.isClient) {
         storedParams["synthParams"] = synthParameters;
         storedParams["chordmode"] = chordMode;
         storedParams["loopEnabled"] = loopEnabled;
-
-        console.log(`storedparams`, storedParams);
 
         var storeButton = instance.find('[data-playind=' + instance.storeIndex + ']');
         $(storeButton).attr('class', "btn btn-primary btn-lg");
@@ -604,8 +949,6 @@ if (Meteor.isClient) {
       if (typeof storedParams !== 'undefined') {
         var loopEnabled = storedParams["loopEnabled"];
         var audioBuffer = storedParams["audioBuffer"];
-
-        console.log('play audiobuffer', audioBuffer);
     
         if (!instance.playbackStates) {
           instance.playbackStates = {};
@@ -652,10 +995,6 @@ if (Meteor.isClient) {
               player.dispose();
             },
           };
-    
-          // Automatically stop the player after the buffer duration
-
-          console.log( audioBuffer.duration);
           
           setTimeout(() => {
             player.stop();
@@ -672,8 +1011,6 @@ if (Meteor.isClient) {
 
     const instrumentType = instance.instrumentType.get();
     const selectedEffects = instance.selectedEffects.get();
-
-    console.log(selectedEffects);
 
     if (instrumentType === 'Synth' || instrumentType === 'FMSynth') {
       params.push('attack', 'decay', 'sustain', 'release', 'detune');
@@ -703,7 +1040,7 @@ if (Meteor.isClient) {
         params.push('distortionAmount', 'distortionWet');
       }
         else if (effect === 'Chorus') {
-        params.push('chorusFrequency', 'delayTime', 'chorusdepth', 'chorusWet');
+        params.push('chorusFrequency', 'chorusDelay', 'chorusdepth', 'chorusWet');
       } else if (effect === 'Tremolo') {
         params.push('tremoloFrequency', 'tremolodepth', 'tremoloWet');
       } else if (effect === 'LowPassFilter') {
@@ -714,17 +1051,18 @@ if (Meteor.isClient) {
     }
 
     instance.listParams.set(params);
-    console.log('listParams',instance.listParams.get());
   }
 
   function getSynthParamsFromGui(instance){
 
     var rbs = instance.findAll('input[type=radio]:checked');
-    var checked = rbs.filter(function(rb) { return $(rb).attr('data-type') == "matrixbutton"})
+    var checked = rbs.filter(function(rb) { return $(rb).attr('data-type') == "matrixbutton"});
     var synthParameters = {};
-    const allData = instance.parsedata;
+    const allData = instance.parsedata.get();
     const numRows = instance.numRows.get();
-    const activeRowIndex = allData.indexOf(instance.activeRow.get());
+    const rowKeys = Object.keys(allData);
+    const activeRowName = instance.activeRowName.get();
+    const activeRowIndex = rowKeys.indexOf(activeRowName);
 
     var mappingInfo = []; //to store the current mapping
 
@@ -741,7 +1079,12 @@ if (Meteor.isClient) {
 
       mappingInfo.push({ par, datakey, fieldValue });
 
-      synthParameters[element][par] = specs[datakey](fieldValue, Number(Session.get(par)[0]), Number(Session.get(par)[1]));
+      synthParameters[element][par] = instance.specs[datakey](fieldValue, Number(Session.get(par)[0]), Number(Session.get(par)[1]));
+
+      if (par === 'midinote') {
+        const selectedScale = instance.selectedScale.get();
+        synthParameters[element][par] = adjustMidiNoteToScale(synthParameters[element][par], selectedScale);
+      }
 
     }
 
@@ -749,17 +1092,23 @@ if (Meteor.isClient) {
 
     for (let i = 1; i < numRows; i++) {
       const rowIndex = activeRowIndex + i;
-      if (rowIndex >= allData.length) break;
+      if (rowIndex >= rowKeys.length) break;
       let currentElement = rowIndex.toString();
       if (typeof synthParameters[currentElement] == 'undefined') {
         synthParameters[currentElement] = {};
       }
 
       mappingInfo.forEach(({ par, datakey }) => {
-        const currentRowData = allData[rowIndex];  
+        const currentRowKey = rowKeys[rowIndex];
+        const currentRowData = allData[currentRowKey];  
         const dataValue = currentRowData[datakey]; 
   
-        synthParameters[currentElement][par] = specs[datakey](dataValue, Number(Session.get(par)[0]), Number(Session.get(par)[1]));
+        synthParameters[currentElement][par] = instance.specs[datakey](dataValue, Number(Session.get(par)[0]), Number(Session.get(par)[1]));
+
+        if (par === 'midinote') {
+          const selectedScale = instance.selectedScale.get();
+          synthParameters[currentElement][par] = adjustMidiNoteToScale(synthParameters[currentElement][par], selectedScale);
+        }
       });
     }
 
@@ -1109,6 +1458,7 @@ if (Meteor.isClient) {
             }
           }
         }
+
   
         // Wait for the duration
         await delay(maxDur);
@@ -1141,13 +1491,14 @@ if (Meteor.isClient) {
   }
 
   function delay(duration) {
-    return new Promise(resolve => setTimeout(resolve, (duration * 1500) + 200));
+    return new Promise(resolve => setTimeout(resolve, (duration * 1200) + 200));
   }
 
   function startCrossfadeLoop(audioBuffer, ind, playButton, instance) {
      
-    const loopDuration = ((audioBuffer.duration)/1.5) - 0.1;
-    const crossfadeTime = loopDuration * 0.1;
+    const loopDuration = audioBuffer.duration;
+    const maxdur = ((audioBuffer.duration)-0.2)/1.2;
+    const crossfadeTime = loopDuration-maxdur;
   
     const playerA = new Tone.Player({
       url: audioBuffer,
@@ -1279,6 +1630,35 @@ if (Meteor.isClient) {
     }
   }
 
+  function adjustMidiNoteToScale(midiNote, scaleName) {
+    if (scaleName === 'Chromatic') {
+      return midiNote; // No adjustment needed
+    }
+  
+    const scaleIntervals = scales[scaleName];
+    if (!scaleIntervals) {
+      return midiNote; // Default to no adjustment if scale not found
+    }
+  
+    const noteNumberInOctave = midiNote % 12;
+    const octave = Math.floor(midiNote / 12);
+    let closestInterval = scaleIntervals[0];
+    let minDistance = Math.abs(noteNumberInOctave - scaleIntervals[0]);
+  
+    for (let i = 1; i < scaleIntervals.length; i++) {
+      const distance = Math.abs(noteNumberInOctave - scaleIntervals[i]);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestInterval = scaleIntervals[i];
+      }
+    }
+  
+    const adjustedNoteInOctave = closestInterval;
+    const adjustedMidiNote = (octave * 12) + adjustedNoteInOctave;
+  
+    return adjustedMidiNote;
+  }
+
   function parseColumns(content) {
     const separator = content.includes('\t') ? '\t' : ',';
     const firstRow = content.trim().split('\n')[0];
@@ -1314,35 +1694,49 @@ if (Meteor.isClient) {
       keys = document.getElementById('keysInput').value.split(',').map((key) => key.trim());
     }
 
-    // Get the selected range of rows
     const slider = document.getElementById('slider');
     const [startRow, endRow] = sliderInstance.get().map(Number);
 
-    const newDictionary = [];
+    const newDictionary = {};
+    let rowIndex = startRow - 1;
+
     const numericColumnRanges = {}; // min/max values for numeric columns
 
-    rows.slice(useHeaders ? 1 : 0).slice(startRow - 1, endRow).forEach((row, rowIndex) => {
+    let dataRows = rows.slice(useHeaders ? 1 : 0);
+    dataRows = dataRows.slice(startRow - 1, endRow);
+
+    dataRows.forEach((row, i) => {
       const values = parseCSVRow(row, separator);
       let entry = {};
 
       keys.forEach((key, index) => {
         if (index < selectedColumns.length) {
-            let value = detectType(values[selectedColumns[index]].trim());
-            entry[key] = value;
+            const columnIndex = selectedColumns[index];
+            const valueStr = values[columnIndex];
 
-            // Check if this is a numeric column and calculate min/max
-            if (typeof value === 'number') {
-            if (!numericColumnRanges[key]) {
-              numericColumnRanges[key] = { min: value, max: value };
+            if (valueStr !== undefined) {
+              let value = detectType(valueStr.trim());
+              entry[key] = value;
+    
+              // Check if this is a numeric column and calculate min/max
+              if (typeof value === 'number') {
+                if (!numericColumnRanges[key]) {
+                  numericColumnRanges[key] = { min: value, max: value };
+                } else {
+                  numericColumnRanges[key].min = Math.min(numericColumnRanges[key].min, value);
+                  numericColumnRanges[key].max = Math.max(numericColumnRanges[key].max, value);
+                }
+              }
             } else {
-              numericColumnRanges[key].min = Math.min(numericColumnRanges[key].min, value);
-              numericColumnRanges[key].max = Math.max(numericColumnRanges[key].max, value);
+              
+              entry[key] = null;
             }
-          }
         }
       });
 
-      newDictionary.push(entry);
+      const currentRowIndex = startRow + i;
+      const rowName = (currentRowIndex).toString(); // Use row number as key
+      newDictionary[rowName] = entry;
     });
 
     dictionary.set(EJSON.stringify(newDictionary, { indent: true }));
@@ -1358,7 +1752,16 @@ if (Meteor.isClient) {
       inminInmaxModal.show();
     }
 
-    // set datadict ReactiveVar for export
+    // Overwrite parsedata with the new data
+    instance.parsedata.set(newDictionary);
+
+    datasets['User Uploaded Data'].data = instance.parsedata.get();
+
+    instance.selectedDataset.set('User Uploaded Data');
+
+    const defaultRowName = Object.keys(instance.parsedata.get())[0];
+    instance.activeRowName.set(defaultRowName);
+    instance.activeRow.set(instance.parsedata.get()[defaultRowName]);
 
     datadict.set(newDictionary);
 
@@ -1398,8 +1801,7 @@ if (Meteor.isClient) {
     let match;
 
     while ((match = regex.exec(row)) !== null) {
-      let value = match[1] || ''; // The captured group
-      // If the value is quoted, remove the surrounding quotes and unescape double quotes inside
+      let value = match[1] || '';
       if (value.startsWith('"') && value.endsWith('"')) {
         value = value.slice(1, -1).replace(/""/g, '"');
       }
@@ -1409,41 +1811,23 @@ if (Meteor.isClient) {
     return result;
   }
 
-  function exportToJSFile(data) {
-    fetch('/exportData', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: EJSON.stringify(data)
-    })
-      .then((response) => {
-        if (response.ok) {
-          console.log('File exported successfully!');
-        } else {
-          console.error('Failed to export file.');
-        }
-      })
-      .catch((error) => console.error('Error:', error));
+  function triggerPreset(presetNumber) {
+    var buttonId = 'cell' + presetNumber;
+    var buttonElement = document.getElementById(buttonId);
+  
+    if (buttonElement) {
+      var event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      buttonElement.dispatchEvent(event);
+    }
   }
-
-  function saveMappingFunctions(mappingFunctions) {
-    fetch('/saveMappingFunctions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/ejson',
-      },
-      body: EJSON.stringify(mappingFunctions),
-    })
-      .then(response => {
-        if (response.ok) {
-          console.log('Mapping functions saved successfully!');
-        } else {
-          console.error('Failed to save mapping functions.');
-        }
-      })
-      .catch(error => console.error('Error:', error));
-  }
-
+  
+  Template.StEg_app.onDestroyed(function () {
+    $(document).off('keydown');
+  });
+  
 }
 

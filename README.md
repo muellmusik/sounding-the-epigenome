@@ -1,8 +1,12 @@
+
+
+=============================================================
+
 # REQUIREMENTS:
 
-* Node.js 20.16.0
-* Npm 10.8.1
-* Meteor 3.0.2
+    - Node.js 20.16.0
+    - Npm 10.8.1
+    - Meteor 3.0.2
 
 # INSTALLATION AND RUNNING INSTRUCTIONS:
 
@@ -20,3 +24,6 @@
 [$ meteor run]
 
 * Go to http://localhost:[port] in your browser window.
+
+
+=============================================================

@@ -2,6 +2,7 @@ import { Template } from 'meteor/templating';
 import { Session } from 'meteor/session';
 import noUiSlider from 'nouislider';
 import { EJSON } from 'meteor/ejson';
+import i18next from 'i18next';
 
 // Session defaults
 //Core-Envelope 
@@ -38,6 +39,7 @@ Session.setDefault('distortionWet', [0.0, 1.0]); // Distortion wet/dry mix: 0-1
 Session.setDefault('chorusFrequency', [1, 3]); // Chorus frequency: 0.1-5 Hz
 Session.setDefault('chorusdepth', [0.3, 0.7]); // Chorus Depth: 0-1 
 Session.setDefault('chorusWet', [0.2, 0.8]); // Chorus wet/dry mix: 0-1
+Session.setDefault('chorusDelay', [0.02, 1.0]); // Chorus deay time: 0 - 2 s
 // Tremolo
 Session.setDefault('tremoloFrequency', [5, 15]); // Tremolo frequency: 0.1-20 Hz
 Session.setDefault('tremolodepth', [0.3, 0.7]); // Tremolo Depth: 0-1 
@@ -50,37 +52,54 @@ Session.setDefault('pan', [-0.5, 0.5]); // Panner position: -1 (left) to 1 (righ
 
 Template.StEg_app.onRendered(function () {
     const instance = this;
+    const sliderElements = [];
     let previousListParams = [];
   
     instance.autorun(function () {
-      const listParams = instance.listParams.get();
+      const listParamsData = instance.listParams.get();
 
-      if (EJSON.equals(listParams, previousListParams)) {
+      if (EJSON.equals(listParamsData, previousListParams)) {
         // listParams hasn't changed, no need to rebuild the sliders
         return;
       }
 
-      previousListParams = listParams.slice();
+      previousListParams = listParamsData.slice();
+
+      const listParams = listParamsData.map((param) => {
+        return {
+          key: param,
+          label: i18next.t(`parameterLabels.${param}`),
+        };
+      });
   
       // Clear existing sliders
       const slidersContainer = document.getElementById('ranges-table');
       if (slidersContainer) {
+
+        sliderElements.forEach((sliderElement) => {
+          if (sliderElement.noUiSlider) {
+            sliderElement.noUiSlider.destroy();
+          }
+        });
+
+        sliderElements.length = 0;
+
         // Rebuild the sliders table based on listParams
         slidersContainer.innerHTML = `
           <thead class="thead-light">
             <tr class="text-center">
-              ${listParams.map((param) => `<th class="text-light">${param}</th>`).join('')}
+              ${listParams.map((param) => `<th class="text-light">${param.label}</th>`).join('')}
             </tr>
           </thead>
           <tbody>
             <tr class="text-center">
-              ${listParams.map((param) => `<td><span id="${param}-low" class="text-light"></span></td>`).join('')}
+              ${listParams.map((param) => `<td><span id="${param.key}-low" class="text-light"></span></td>`).join('')}
             </tr>
             <tr class="text-center">
-              ${listParams.map((param) => `<td><div id="${param}" class="rangeslider"></div></td>`).join('')}
+              ${listParams.map((param) => `<td><div id="${param.key}" class="rangeslider"></div></td>`).join('')}
             </tr>
             <tr class="text-center">
-              ${listParams.map((param) => `<td><span id="${param}-high" class="text-light"></span></td>`).join('')}
+              ${listParams.map((param) => `<td><span id="${param.key}-high" class="text-light"></span></td>`).join('')}
             </tr>
           </tbody>
         `;
@@ -113,6 +132,7 @@ Template.StEg_app.onRendered(function () {
           chorusFrequency: { step: 0.1, min: 0.1, max: 5 }, 
           chorusdepth: { step: 0.01, min: 0, max: 1 }, 
           chorusWet: { step: 0.01, min: 0, max: 1 }, 
+          chorusDelay: { step: 0.01, min: 0.0, max: 2. }, 
           tremoloFrequency: { step: 0.1, min: 0.1, max: 20 }, 
           tremolodepth: { step: 0.01, min: 0, max: 1 }, 
           tremoloWet: { step: 0.01, min: 0, max: 1 }, 
@@ -126,16 +146,23 @@ Template.StEg_app.onRendered(function () {
         const defaultSettings = { step: 0.01, min: 0, max: 1 };
   
         listParams.forEach((param) => {
+
+          const key = param.key;
           // Get the settings for the current parameter, or use default settings
-          const { step, min, max } = sliderSettings[param] || defaultSettings;
+          const { step, min, max } = sliderSettings[key] || defaultSettings;
   
-          const initialValues = Session.get(param) || [min, max];
+          const initialValues = Session.get(key) || [min, max];
   
-          const sliderElement = document.getElementById(param);
-          const lowSpan = document.getElementById(`${param}-low`);
-          const highSpan = document.getElementById(`${param}-high`);
+          const sliderElement = document.getElementById(key);
+          const lowSpan = document.getElementById(`${key}-low`);
+          const highSpan = document.getElementById(`${key}-high`);
   
           if (sliderElement) {
+
+            if (sliderElement.noUiSlider) {
+              sliderElement.noUiSlider.destroy();
+            }
+
             noUiSlider.create(sliderElement, {
               start: initialValues,
               orientation: 'vertical',
@@ -148,21 +175,48 @@ Template.StEg_app.onRendered(function () {
               },
             });
 
+            sliderElements.push(sliderElement);
+
             // Set initial values of spans
             lowSpan.textContent = parseFloat(initialValues[0]).toFixed(2);
             highSpan.textContent = parseFloat(initialValues[1]).toFixed(2);
   
             sliderElement.noUiSlider.on('slide', (values) => {
-              Session.set(param, [parseFloat(values[0]), parseFloat(values[1])]);
+              Session.set(key, [parseFloat(values[0]), parseFloat(values[1])]);
               lowSpan.textContent = parseFloat(values[0]).toFixed(2);
               highSpan.textContent = parseFloat(values[1]).toFixed(2);
             });
   
             sliderElement.noUiSlider.on('change', (values) => {
-              Session.set(param, [parseFloat(values[0]), parseFloat(values[1])]);
+              Session.set(key, [parseFloat(values[0]), parseFloat(values[1])]);
             });
           }
         });
+      }
+    });
+
+    // Re-run when language changes to update labels
+
+    instance.autorun(function () {
+      Session.get('currentLanguage'); 
+
+      
+      const listParamsData = instance.listParams.get();
+      const listParams = listParamsData.map((param) => {
+        return {
+          key: param,
+          label: i18next.t(`parameterLabels.${param}`),
+        };
+      });
+
+      
+      const slidersContainer = document.getElementById('ranges-table');
+      if (slidersContainer) {
+        
+        const headerRow = slidersContainer.querySelector('thead tr');
+        if (headerRow) {
+          headerRow.innerHTML = listParams.map((param) => `<th class="text-light">${param.label}</th>`).join('');
+        }
       }
     });
   });

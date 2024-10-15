@@ -121,7 +121,7 @@ export function createDistortion(params) {
 export function createChorus(params) {
     return new Tone.Chorus({
       frequency: params.chorusFrequency || 1.5,
-      delayTime: params.delayTime || 3.5,
+      delayTime: params.chorusDelay || 0.02,
       depth: params.chorusdepth || 0.7,
       feedback: params.feedback || 0.1,
       spread: params.spread || 180,
