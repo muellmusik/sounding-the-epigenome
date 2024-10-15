@@ -60,7 +60,7 @@
     "effectOptions": {
       "Reverb": "Reverberación",
       "Delay": "Retardo",
-      "Distorsión": "Distorsión",
+      "Distortion": "Distorsión",
       "Chorus": "Coro",
       "Tremolo": "Trémolo",
       "LowPassFilter": "Filtro Pasa Bajos",
