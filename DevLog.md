@@ -1,5 +1,15 @@
 # Dev Log:
 
+* Milad Mardakheh (19/10/2024):
+
+    - Added Spanish translations for scales/modes
+
+    - Added Support Website in both English and Spanish (check public folder)
+
+    - Added instructions for static html deployment (check Static_Deployment_Instructions.md)
+
+    - Added "Learn More" button for linking to support website.
+
 * Milad Mardakheh (15/10/2024):
 
     - Removed server-side code + ported file import/parsing functionality entirely to the client-side. No need for server operations.

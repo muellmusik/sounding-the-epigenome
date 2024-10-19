@@ -2,6 +2,7 @@
     "language": "English",
     "title": "StEg App",
     "header": "Sounding the Epigenome",
+    "learnMore": "Learn More",
     "loadDataFile": "Load data file:",
     "fileTypes": "(.csv, .tsv, .txt)",
     "reset": "Reset",
@@ -66,6 +67,16 @@
       "LowPassFilter": "LPF-Sweep",
       "Panner": "Panner"
     },
+    "scaleOptions": {
+      "Chromatic": "Chromatic",
+      "Ionian": "Ionian",
+      "Dorian": "Dorian",
+      "Phrygian": "Phrygian",
+      "Lydian": "Lydian",
+      "Mixolydian": "Mixolydian",
+      "Aeolian": "Aeolian",
+      "Locrian": "Locrian"
+    },
     "parameterLabels": {
       "midinote": "Midi Note",
       "duration": "Duration",
@@ -101,6 +112,7 @@
     },
     "selectInstrumentPlaceholder": "Select Instrument",
     "oscillatorTypePlaceholder": "Oscillator Type",
-    "selectEffectsPlaceholder": "Select Effects"
+    "selectEffectsPlaceholder": "Select Effects",
+    "selectScalePlaceholder": "Select Scale"
   }
   

@@ -207,8 +207,36 @@ if (Meteor.isClient) {
 
     const selectedEffects = instance.selectedEffects.get() || [];
     instance.effectsSelectInstance.setValue(selectedEffects);
+
+    instance.scaleOptions = [
+      { value: 'Chromatic' },
+      { value: 'Ionian' },
+      { value: 'Dorian' },
+      { value: 'Phrygian' },
+      { value: 'Lydian' },
+      { value: 'Mixolydian' },
+      { value: 'Aeolian' },
+      { value: 'Locrian' },
+    ];
     
-    new TomSelect('#scale-select',{placeholder:'Select Scale'});
+    instance.scaleSelectInstance = new TomSelect('#scale-select', {
+      options: instance.scaleOptions,
+      valueField: 'value',
+      placeholder: i18next.t('selectScalePlaceholder'),
+      render: {
+        option: function (data, escape) {
+          const label = i18next.t('scaleOptions.' + data.value);
+          return '<div>' + escape(label) + '</div>';
+        },
+        item: function (data, escape) {
+          const label = i18next.t('scaleOptions.' + data.value);
+          return '<div>' + escape(label) + '</div>';
+        },
+      },
+    });
+
+    const selectedScale = instance.selectedScale.get() || 'Chromatic';
+    instance.scaleSelectInstance.setValue(selectedScale);
 
     const currentLanguage = i18next.language || 'en';
     if (currentLanguage === 'en') {
@@ -225,6 +253,7 @@ if (Meteor.isClient) {
 
       const selectedInstrument = instance.instrumentSelectInstance.getValue();
       const selectedEffects = instance.effectsSelectInstance.getValue() || [];
+      const selectedScale = instance.scaleSelectInstance.getValue() || 'Chromatic';
 
       instance.effectsSelectInstance.settings.placeholder = i18next.t('selectEffectsPlaceholder');
       instance.effectsSelectInstance.control_input.setAttribute('placeholder', i18next.t('selectEffectsPlaceholder'));
@@ -237,6 +266,10 @@ if (Meteor.isClient) {
       instance.effectsSelectInstance.refreshOptions(false);
       instance.effectsSelectInstance.refreshItems();
 
+      instance.scaleSelectInstance.clearCache();
+      instance.scaleSelectInstance.refreshOptions(false);
+      instance.scaleSelectInstance.refreshItems();
+
       instance.instrumentSelectInstance.clear(true);
       instance.instrumentSelectInstance.addItem(selectedInstrument);
      
@@ -244,6 +277,9 @@ if (Meteor.isClient) {
       // selectedEffects.forEach(effect => {
       //   instance.effectsSelectInstance.addItem(effect);
       // });
+
+      instance.scaleSelectInstance.clear(true);
+      instance.scaleSelectInstance.addItem(selectedScale);
     });
 
     //Keyboard-preset mapping
@@ -489,7 +525,16 @@ if (Meteor.isClient) {
     },
 
     scales() {
-      return ['Chromatic', 'Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
+      return [
+        { value: 'Chromatic' },
+        { value: 'Ionian' },
+        { value: 'Dorian' },
+        { value: 'Phrygian' },
+        { value: 'Lydian' },
+        { value: 'Mixolydian' },
+        { value: 'Aeolian' },
+        { value: 'Locrian' },
+      ];
     },
 
     selectedScale() {
@@ -539,6 +584,17 @@ if (Meteor.isClient) {
       instance.specs = selectedSpecs || {};
       
       showOutput.set(true);
+    },
+
+    'click #learn-more-button'(event, instance) {
+      const currentLanguage = i18next.language || 'en';
+      let url;
+      if (currentLanguage === 'es') {
+        url = './Support_website/StEg_support_website_es.html';
+      } else {
+        url = './Support_website/StEg_support_website_en.html';
+      }
+      window.open(url, '_blank'); // Open in a new tab
     },
     
     'change #fileInput'(event, instance) {

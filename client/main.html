@@ -14,17 +14,24 @@
     <div class="row justify-content-center">
       <div class="col-md-12 m-0 px-3">
         <!-- Header and File Upload Section -->
-        <div class="row mt-2 mb-2">
-          <div class="col-9 mb-3 text-start">
+        <div class="row mt-2 mb-3">
+          <div class="col-md-8 mb-3 text-start">
             <div class="badge text-bg-warning mt-2 bg-gradient shadow-lg">
               <h2 class="text-light">{{t 'header'}}</h2>
             </div> 
           </div>
-          <div class="col-3 text-end">
-            <label for="langswitch" class="text-light shadow-lg" style="font-size: small;">{{t 'languageSwitch'}}</label>
-            <div class="input-group-sm" id="langswitch">
-              <button type="button" class="btn btn-warning mt-1 shadow-lg" id="lang-en" data-lang="en">EN</button>
-              <button type="button" class="btn btn-warning mt-1 shadow-lg" id="lang-es" data-lang="es">ES</button>
+          <div class="col-md-4 mb-3 text-end">
+            <div class="hstack gap-4">
+              <div class=" input-group-sm ms-auto mt-4">
+                <button id="learn-more-button" class="btn btn-info mt-1 shadow-lg">{{t 'learnMore'}}</button>
+              </div>
+              <div>
+                <label for="langswitch" class="text-light shadow-lg" style="font-size: small;">{{t 'languageSwitch'}}</label>
+                <div class="input-group-sm" id="langswitch">
+                  <button type="button" class="btn btn-warning mt-1 shadow-lg" id="lang-en" data-lang="en">EN</button>
+                  <button type="button" class="btn btn-warning mt-1 shadow-lg" id="lang-es" data-lang="es">ES</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -84,11 +91,7 @@
             </div>
             <div class="input-group-sm mb-4">
               <span class="input-group-text text-light shadow-lg" style="font-size: small;">{{t 'selectScale'}}</span>
-              <select id="scale-select" class="form-control-sm shadow-lg">
-                {{#each scales}}
-                  <option value="{{this}}">{{this}}</option>
-                {{/each}}
-              </select>
+              <select id="scale-select" class="form-control-sm shadow-lg"></select>
             </div>
           </div>
           <div class="col-sm-2 pt-0 mb-3 text-start">
