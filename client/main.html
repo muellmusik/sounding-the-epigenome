@@ -170,8 +170,9 @@
                        <td class="text-light shadow-lg" style="position: sticky; left:0px;"><b> {{ pair.label}} </b><br/>{{ pair.value }}</td>
                        {{#each field in listParams }}
                        <td>
-                         <input type="radio" name="{{ field.key }}-{{ dataSet.Row }}" class="form-check-input" value="{{ pair.value }}" checked 
-                          id="{{dataSet.Row}}-{{ pair.label }}-{{ field.key }}" data-type="matrixbutton" data-key="{{ pair.label }}" data-field="{{ field.key }}" data-element="{{dataSet.Row}}"/> 
+                         <input type="radio" name="{{ field.key }}-{{ dataSet.Row }}" class="form-check-input" value="{{ pair.value }}" checked
+                          id="{{dataSet.Row}}-{{ pair.label }}-{{ field.key }}" data-type="matrixbutton" data-key="{{ pair.label }}"
+                          data-field="{{ field.key }}" data-element="{{dataSet.Row}}" aria-label="Map {{ field.key }} to {{ pair.label }}"/>
                        </td>
                        {{/each }}
                     </tr>
