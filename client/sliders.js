@@ -168,6 +168,10 @@ Template.StEg_app.onRendered(function () {
               orientation: 'vertical',
               connect: true,
               handles: 2,
+              handleAttributes: [
+                { 'aria-label': 'lower limit' },
+                { 'aria-label': 'upper limit' },
+              ],
               step: step,
               range: {
                 min: min,
