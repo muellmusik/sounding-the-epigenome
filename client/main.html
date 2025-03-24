@@ -98,9 +98,9 @@
               <span class="input-group-text text-light shadow-lg" style="font-size: small;">{{t 'tempo'}}</span>
               <input type="number" id="tempoInput" aria-label="Tempo in beats per minute" class="form-control bg-light shadow-md" value="60" min="30" max="300">
             </div>
-            <div class="input-group-sm mb-4">
-              <span class="input-group-text text-light shadow-lg" style="font-size: small;">{{t 'selectScale'}}</span>
-              <select id="scale-select" class="form-control-sm shadow-lg"></select>
+            <div class="input-group-sm mb-4" aria-labelledby="scale-select-label">
+              <span id="scale-select-label" class="input-group-text text-light shadow-lg" style="font-size: small;">{{t 'selectScale'}}</span>
+              <select id="scale-select" class="form-control-sm shadow-lg" aria-label="{{t 'selectScale'}}"></select>
             </div>
           </div>
           <div class="col-sm-2 pt-0 mb-3 text-start">
@@ -119,8 +119,8 @@
           <div class="col-lg-4 mt-0 px-0 mb-3 text-center px-3">
             <div class="row">
               <div class="form-control-sm ">
-                <label for="instrument-select" class="text-light shadow-lg"><b>{{t 'instrument'}}</b></label>
-              <select id="instrument-select" data-placeholder="{{t 'selectInstrumentPlaceholder'}}" class="shadow-lg">
+                <label id="instrument-select-label" for="instrument-select" class="text-light shadow-lg"><b>{{t 'instrument'}}</b></label>
+              <select id="instrument-select" data-placeholder="{{t 'selectInstrumentPlaceholder'}}" class="shadow-lg" aria-labelledby="instrument-select-label">
               </select>
               </div>
             </div>
@@ -131,8 +131,8 @@
             <!-- Effects Selection -->
             <div class="row">
               <div class="form-control-sm">
-                <label for="effects-select" class="text-light shadow-lg"><b>{{t 'effects'}}</b></label>
-                <select class="form-control-sm shadow-lg" id="effects-select" multiple data-placeholder="{{t 'selectEffectsPlaceholder'}}">
+                <label id="effects-select-label" for="effects-select" class="text-light shadow-lg"><b>{{t 'effects'}}</b></label>
+                <select class="form-control-sm shadow-lg" id="effects-select" multiple data-placeholder="{{t 'selectEffectsPlaceholder'}}" aria-labelledby="effects-select-label">
                 </select>
               </div>
             </div>
@@ -355,8 +355,8 @@
 <template name="OscillatorTypeSelect">
   <div class="row">
     <div class="form-control-sm">
-      <label for="synthtype-select" class="text-light shadow-lg"><b>{{t 'oscillatorType'}}</b></label>
-      <select id="synthtype-select" data-placeholder="{{t 'oscillatorTypePlaceholder'}}" class="shadow-lg">
+      <label id="synthtype-select-label" for="synthtype-select" class="text-light shadow-lg"><b>{{t 'oscillatorType'}}</b></label>
+      <select id="synthtype-select" data-placeholder="{{t 'oscillatorTypePlaceholder'}}" class="shadow-lg" aria-labelledby="synthtype-select-label">
       </select>
     </div>
   </div>
