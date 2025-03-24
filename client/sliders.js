@@ -169,8 +169,8 @@ Template.StEg_app.onRendered(function () {
               connect: true,
               handles: 2,
               handleAttributes: [
-                { 'aria-label': 'lower limit' },
-                { 'aria-label': 'upper limit' },
+                { 'aria-label': param.label + ' lower limit' },
+                { 'aria-label': param.label + ' upper limit' },
               ],
               step: step,
               range: {
