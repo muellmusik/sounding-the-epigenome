@@ -240,11 +240,11 @@ if (Meteor.isClient) {
 
     const currentLanguage = i18next.language || 'en';
     if (currentLanguage === 'en') {
-      $('#lang-en').removeClass('btn-warning').addClass('btn-success');
-      $('#lang-es').removeClass('btn-success').addClass('btn-warning');
+      $('#lang-en').removeClass('btn-light').addClass('btn-warning');
+      $('#lang-es').removeClass('btn-warning').addClass('btn-light');
     } else {
-      $('#lang-es').removeClass('btn-warning').addClass('btn-success');
-      $('#lang-en').removeClass('btn-success').addClass('btn-warning');
+      $('#lang-es').removeClass('btn-light').addClass('btn-warning');
+      $('#lang-en').removeClass('btn-warning').addClass('btn-light');
     }
 
     this.autorun(() => {
@@ -665,11 +665,11 @@ if (Meteor.isClient) {
           Session.set('currentLanguage', selectedLanguage);
           // Update button classes
           if (selectedLanguage === 'en') {
-            $('#lang-en').removeClass('btn-warning').addClass('btn-success');
-            $('#lang-es').removeClass('btn-success').addClass('btn-warning');
+            $('#lang-en').removeClass('btn-light').addClass('btn-warning');
+            $('#lang-es').removeClass('btn-warning').addClass('btn-light');
           } else {
-            $('#lang-es').removeClass('btn-warning').addClass('btn-success');
-            $('#lang-en').removeClass('btn-success').addClass('btn-warning');
+            $('#lang-es').removeClass('btn-light').addClass('btn-warning');
+            $('#lang-en').removeClass('btn-warning').addClass('btn-light');
           }
         });
       },

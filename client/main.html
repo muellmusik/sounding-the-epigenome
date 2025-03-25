@@ -32,13 +32,13 @@
           <div class="col-md-4 mb-3 text-end">
             <div class="hstack gap-4">
               <div class=" input-group-sm ms-auto mt-4">
-                <button id="learn-more-button" class="btn btn-info mt-1 shadow-lg" tabindex="3" aria-describedby="Click for more information and help on the app">{{t 'learnMore'}}</button>
+                <button id="learn-more-button" class="btn btn-warning mt-1 shadow-lg" tabindex="3" aria-describedby="Click for more information and help on the app">{{t 'learnMore'}}</button>
               </div>
               <div>
                 <label for="langswitch" class="text-light shadow-lg" style="font-size: small;">{{t 'languageSwitch'}}</label>
                 <div class="input-group-sm" id="langswitch" aria-label="Language Selection">
-                  <button type="button" class="btn btn-warning mt-1 shadow-lg" id="lang-en" data-lang="en" tabindex="1" aria-label="English">EN</button>
-                  <button type="button" class="btn btn-warning mt-1 shadow-lg" id="lang-es" data-lang="es" tabindex="2" aria-label="Español">ES</button>
+                  <button type="button" class="btn btn-light mt-1 shadow-lg" id="lang-en" data-lang="en" tabindex="1" aria-label="English">EN</button>
+                  <button type="button" class="btn btn-light mt-1 shadow-lg" id="lang-es" data-lang="es" tabindex="2" aria-label="Español">ES</button>
                 </div>
               </div>
             </div>
@@ -159,7 +159,7 @@
                     {{#each dataSet in getSonificationData }} <!-- datasets are the collective number of rows imported for sonification from parsed data-->
                     {{#unless @index }}
                     <tr class="text-center ">
-                      <th colspan="1" class="table-warning text-light " style="background-color: #ffeeba; position: sticky; left:0px;">
+                      <th colspan="1" class="bg-dark-subtle text-dark" style="position: sticky; left:0px;">
                         {{t 'mapping'}}
                       </th>
                     </tr>
