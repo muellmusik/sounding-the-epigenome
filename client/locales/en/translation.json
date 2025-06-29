@@ -68,6 +68,7 @@
       "Panner": "Panner"
     },
     "scaleOptions": {
+      "Microtonal": "Microtonal",
       "Chromatic": "Chromatic",
       "Ionian": "Ionian",
       "Dorian": "Dorian",

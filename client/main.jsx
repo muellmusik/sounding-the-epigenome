@@ -39,7 +39,8 @@ const showOutput = new ReactiveVar(false);
 const datadict = new ReactiveVar({});
 let sliderInstance;
 const scales = {
-  'Chromatic': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  'Microtonal': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  'Chromatic' : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
   'Ionian': [0, 2, 4, 5, 7, 9, 11],
   'Dorian': [0, 2, 3, 5, 7, 9, 10],
   'Phrygian': [0, 1, 3, 5, 7, 8, 10],
@@ -74,7 +75,7 @@ if (Meteor.isClient) {
 
     this.listParams = new ReactiveVar(['midinote','duration','attack','decay','sustain','release','detune',]);
 
-    this.selectedScale = new ReactiveVar('Chromatic');
+    this.selectedScale = new ReactiveVar('Microtonal');
 
     this.parsedata = new ReactiveVar({});
     const initialParsedData = {};
@@ -209,6 +210,7 @@ if (Meteor.isClient) {
     instance.effectsSelectInstance.setValue(selectedEffects);
 
     instance.scaleOptions = [
+      { value: 'Microtonal' },
       { value: 'Chromatic' },
       { value: 'Ionian' },
       { value: 'Dorian' },
@@ -235,7 +237,7 @@ if (Meteor.isClient) {
       },
     });
 
-    const selectedScale = instance.selectedScale.get() || 'Chromatic';
+    const selectedScale = instance.selectedScale.get() || 'Microtonal';
     instance.scaleSelectInstance.setValue(selectedScale);
 
     const currentLanguage = i18next.language || 'en';
@@ -253,7 +255,7 @@ if (Meteor.isClient) {
 
       const selectedInstrument = instance.instrumentSelectInstance.getValue();
       const selectedEffects = instance.effectsSelectInstance.getValue() || [];
-      const selectedScale = instance.scaleSelectInstance.getValue() || 'Chromatic';
+      const selectedScale = instance.scaleSelectInstance.getValue() || 'Microtonal';
 
       instance.effectsSelectInstance.settings.placeholder = i18next.t('selectEffectsPlaceholder');
       instance.effectsSelectInstance.control_input.setAttribute('placeholder', i18next.t('selectEffectsPlaceholder'));
@@ -1687,8 +1689,12 @@ if (Meteor.isClient) {
   }
 
   function adjustMidiNoteToScale(midiNote, scaleName) {
-    if (scaleName === 'Chromatic') {
+    if (scaleName === 'Microtonal') {
       return midiNote; // No adjustment needed
+    }
+
+     if (scaleName === 'Chromatic') {
+      return Math.round(midiNote); // true chromatic: snap to nearest semitone
     }
   
     const scaleIntervals = scales[scaleName];
