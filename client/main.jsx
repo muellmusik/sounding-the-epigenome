@@ -1380,198 +1380,152 @@ if (Meteor.isClient) {
     }
   }
 
-  async function recordToPreset(synthParameters, chordMode, instance) {
-      try {
-        // Create a new Tone.Recorder
-        const recorder = new Tone.Recorder({ channels: 2});
-  
-        // Create a synth array to hold the synths and effects
-        var synthArray = [];
-        var maxDur = 0.0;
-  
-        const tempo = instance.tempo.get();
-        const qnDuration = 60 / tempo;
+async function recordToPreset(synthParameters, chordMode, instance) {
+  try {
+    const sampleNoteBuffers = {};
 
-        let instrumentsLoadedPromises = [];
-  
-        // Create instruments and effects
-        for (var element in synthParameters) {
-  
-          var params = synthParameters[element];
-  
-          // Create the instrument based on the selected instrument type
-          var instrument;
+    const sampleURLs = {
+      33: 'A1.mp3', 36: 'C2.mp3', 39: 'Ds2.mp3', 42: 'Fs2.mp3', 45: 'A2.mp3',
+      60: 'C4.mp3', 63: 'Ds4.mp3', 66: 'Fs4.mp3', 69: 'A4.mp3',
+      72: 'C5.mp3', 81: 'A5.mp3',
+    };
 
-          if (params.instrumentType === 'Sampler') {
-            let instrumentLoadedPromise = new Promise((resolve, reject) => {
-              params.onload = () => {
-                resolve();
-              };
-            });
-            instrumentsLoadedPromises.push(instrumentLoadedPromise);
-            instrument = Audio.createSampler(params);
-          } else if (params.instrumentType === 'Synth') {
-            instrument = Audio.createSynth(params);
-          } else if (params.instrumentType === 'FMSynth') {
-            instrument = Audio.createFMSynth(params);
-          } else if (params.instrumentType === 'MembraneSynth') {
-            instrument = Audio.createMembraneSynth(params);
-          } else if (params.instrumentType === 'MetalSynth') {
-            instrument = Audio.createMetalSynth(params);
-          } else if (params.instrumentType === 'PluckSynth') {
-            instrument = Audio.createPluckSynth(params);
-          } else {
-            instrument = Audio.createSynth(params); // Default to Synth
-          }
-  
-          // Create the effects and chain them
-          let effectsChain = [];
-          for (let effectName of params.selectedEffects) {
-            let effect;
-            if (effectName === 'Reverb') {
-              effect = Audio.createReverb(params);
-            } else if (effectName === 'Delay') {
-              effect = Audio.createDelay(params);
-            } else if (effectName === 'Distortion') {
-              effect = Audio.createDistortion(params);
-            } else if (effectName === 'Chorus') {
-              effect = Audio.createChorus(params);
-            } else if (effectName === 'Tremolo') {
-              effect = Audio.createTremolo(params);
-            } else if (effectName === 'LowPassFilter') {
-              effect = Audio.createLowPassFilter(params, Number(params['duration']));
-            } else if (effectName === 'Panner') {
-              effect = Audio.createPanner(params);
-            }
-            if (effect) {
-              effectsChain.push(effect);
-            }
-          }
+    const baseUrl = 'https://tonejs.github.io/audio/salamander/';
+    const loadedBuffers = {};
 
-          let outputNode = new Tone.Gain();
-  
-          // Connect the instrument and effects chain to the recorder
-          if (effectsChain.length > 0) {
-            instrument.chain(...effectsChain, outputNode);
-          } else {
-            instrument.connect(outputNode);
-          }
+    await Promise.all(
+      Object.entries(sampleURLs).map(async ([midi, file]) => {
+        const buffer = await new Tone.ToneAudioBuffer().load(baseUrl + file);
+        loadedBuffers[Number(midi)] = buffer;
+      })
+    );
 
-          outputNode.connect(recorder);
-          outputNode.connect(Tone.getDestination());
+    // --- Compute durations for total render time ---
+    const tempo = instance.tempo.get();
+    const qn = 60 / tempo;
+    const gap = 0.005;
+    const durations = Object.values(synthParameters).map(p => Number(p.duration) * qn);
+
+    let when = 0;
+    let maxDur = 0.0;
+    for (let i = 0; i < durations.length; i++) {
+      const dur = durations[i];
+      const totalDur = dur + (i * gap);
+      if (totalDur > maxDur) maxDur = totalDur;
+      if (!chordMode) when += dur;
+    }
+    if ((when) > maxDur) maxDur = when;
+    const loopDuration = maxDur; 
   
-  
-          synthArray.push([
-            instrument,                                      // Synth/instrument instance
-            Number(params["duration"]),                      // Duration
-            Tone.Frequency(Number(params["midinote"]), "midi").toFrequency(), // Frequency
-            0,                                               // Placeholder for maxDur
-            effectsChain,                                    // Effects chain
-            params,                                          // Parameters
-            0,                                               // startTime
-            outputNode                                       // Output node
-          ]);
-  
-          var dur = Number(params["duration"]) * qnDuration;
-          if (dur > maxDur) {
-            maxDur = dur;
-          }
+    // Make a "maximum" effect tail for reverb/delay/release
+    let maxReverb = 0, maxDelay = 0, maxRelease = 0;
+    Object.values(synthParameters).forEach(params => {
+      if (params.reverbDecay && params.selectedEffects?.includes('Reverb'))
+        maxReverb = Math.max(maxReverb, params.reverbDecay);
+      if (params.delayTime && params.selectedEffects?.includes('Delay'))
+        maxDelay = Math.max(maxDelay, params.delayTime);
+      if (params.release)
+        maxRelease = Math.max(maxRelease, params.release);
+    });
+    const tail = chordMode ? (durations.length - 1) * gap : 0;
+    const totalTime = loopDuration + tail + Math.max(maxReverb, maxDelay, maxRelease) * 3;
+
+    const offlineBuffer = await Tone.Offline(async ({ transport, destination }) => {
+      transport.cancel();
+      let cursor = 0;
+
+      for (const [idx, params] of Object.entries(synthParameters)) {
+        const dur = Number(params.duration) * qn;
+        const offset = chordMode ? Number(idx) * gap : cursor;
+        if (!chordMode) cursor += dur;
+
+        let instr;
+        if (params.instrumentType === 'Sampler') {
+          // Build buffer/rate for sampler
+          const targetMidi = Number(params.midinote);
+          const available = Object.keys(loadedBuffers).map(Number);
+          const nearest = available.reduce((a, b) =>
+            Math.abs(b - targetMidi) < Math.abs(a - targetMidi) ? b : a
+          );
+          const buffer = loadedBuffers[nearest];
+          if (!buffer) throw new Error(`No audio buffer found for midi ${targetMidi}`);
+          const rate = Math.pow(2, (targetMidi - nearest) / 12);
+          instr = new Tone.Player({
+            url: buffer,
+            fadeIn: 0.01,
+            fadeOut: Number(params.release || 1) * qn,
+          });
+          instr.playbackRate = rate;
+        } else if (params.instrumentType === 'FMSynth') {
+          instr = Audio.createFMSynth(params);
+        } else if (params.instrumentType === 'MembraneSynth') {
+          instr = Audio.createMembraneSynth(params);
+        } else if (params.instrumentType === 'MetalSynth') {
+          instr = Audio.createMetalSynth(params);
+        } else if (params.instrumentType === 'PluckSynth') {
+          instr = Audio.createPluckSynth(params);
+        } else {
+          instr = Audio.createSynth(params);
         }
 
-        // If there are instruments to load, wait for them to finish loading
-        if (instrumentsLoadedPromises.length > 0) {
-          await Promise.all(instrumentsLoadedPromises);
-        }
-  
-        // Start the recorder
-        recorder.start();
-  
-        // Play the synths
-        var when = Tone.now();
-        var start = when;
-  
-        for (var s in synthArray) {
-          var synth = synthArray[s][0];
-          var dur = synthArray[s][1] * qnDuration;
-          var note = synthArray[s][2];
-          var effectsChain = synthArray[s][4];
-          var params = synthArray[s][5];
-
-          if (effectsChain) {
-            for (let effect of effectsChain) {
-              if (effect instanceof Tone.Filter && effect.type === 'lowpass') {
-                effect.frequency.setValueAtTime(20000, when);
-                effect.frequency.rampTo(params.filterFrequency || 1000, dur, when);
-              }
-            }
+        // === Create ALL effects in the current context ===
+        const fx = [];
+        for (const name of params.selectedEffects || []) {
+          let e;
+          if (name === 'Reverb') {
+            e = Audio.createReverb(params);
+            // Await reverb IR build if required (Tone.Reverb in Tone.js >=14)
+            if (e.ready) await e.ready;
           }
-  
-          synth.triggerAttackRelease(note, dur, when);
-  
-          // Update maxDur if in sequence mode
-          if (!chordMode) {
-            when += dur;
-            if ((when - start) > maxDur) {
-              maxDur = when - start;
-            }
-          }
+          else if (name === 'Delay') e = Audio.createDelay(params);
+          else if (name === 'Distortion') e = Audio.createDistortion(params);
+          else if (name === 'Chorus') e = Audio.createChorus(params);
+          else if (name === 'Tremolo') e = Audio.createTremolo(params);
+          else if (name === 'LowPassFilter') e = Audio.createLowPassFilter(params, dur);
+          else if (name === 'Panner') e = Audio.createPanner(params);
+          if (e) fx.push(e);
         }
 
-  
-        // Wait for the duration
-        await delay(maxDur);
-  
-        // Stop the recorder and get the recorded audio
-        const recording = await recorder.stop();
+        // Connect chain
+        const masterGain = new Tone.Gain(0.8).connect(destination); // 0.8 = approx. -2dB
+        if (fx.length) instr.chain(...fx, masterGain);
+        else instr.connect(masterGain);
 
-        recorder.dispose();
-  
-        // Dispose of synths and effects
-        for (var s in synthArray) {
-          const synth = synthArray[s][0];
-          const effectsChain = synthArray[s][4];
-          const outputNode = synthArray[s][7];
-          disposeSynthAndEffects(synth, effectsChain);
-          if (outputNode && !outputNode._disposed) {
-            outputNode.dispose();
-            outputNode._disposed = true;
+        // Lowpass filter sweeps (if any)
+        fx.forEach(fxNode => {
+          if (fxNode instanceof Tone.Filter && fxNode.type === 'lowpass') {
+            fxNode.frequency.setValueAtTime(20000, offset);
+            fxNode.frequency.rampTo(params.filterFrequency || 1000, dur, offset);
           }
+        });
+
+        // Schedule note
+        if (params.instrumentType === 'Sampler') {
+          transport.schedule(time => {
+            instr.start(time);
+            instr.stop(time + dur);
+          }, offset);
+        } else {
+          transport.schedule(time => {
+            instr.triggerAttackRelease(
+              Tone.Frequency(Number(params.midinote), 'midi'),
+              dur,
+              time
+            );
+          }, offset);
         }
-
-        const arrayBuffer = await recording.arrayBuffer();
-        const audioBuffer = await Tone.getContext().rawContext.decodeAudioData(arrayBuffer);
-        const toneAudioBuffer = new Tone.ToneAudioBuffer(audioBuffer);
-
-        return toneAudioBuffer;
-      } catch (error) {
-        throw error;
       }
+
+      transport.start(0);
+    }, totalTime);
+
+    return { audioBuffer: new Tone.ToneAudioBuffer(offlineBuffer.get()), loopDuration };
+  } catch (err) {
+    console.error('recordToPreset offline error:', err);
+    throw err;
   }
+}
 
-  function delay(duration) {
-    return new Promise(resolve => setTimeout(resolve, (duration * 1200) + 200));
-  }
-
-  function startCrossfadeLoop(audioBuffer, ind, playButton, instance) {
-     
-    const loopDuration = audioBuffer.duration;
-    const maxdur = ((audioBuffer.duration)-0.2)/1.2;
-    const crossfadeTime = loopDuration-maxdur;
-  
-    const playerA = new Tone.Player({
-      url: audioBuffer,
-    });
-  
-    const playerB = new Tone.Player({
-      url: audioBuffer,
-    });
-  
-    const crossFade = new Tone.CrossFade().toDestination();
-  
-    playerA.connect(crossFade.a);
-    playerB.connect(crossFade.b);
-
-    const transport = Tone.getTransport();
 
     if (transport.state !== 'started') {
       transport.start();
