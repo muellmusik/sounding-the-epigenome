@@ -818,8 +818,9 @@ if (Meteor.isClient) {
         var storeButton = instance.find('[data-playind=' + instance.storeIndex + ']');
         $(storeButton).attr('class', "btn btn-primary btn-lg");
 
-        const audioBuffer = await recordToPreset(synthParameters, chordMode, instance);
+        const { audioBuffer, loopDuration } = await recordToPreset(synthParameters, chordMode, instance);
         storedParams["audioBuffer"] = audioBuffer;
+        storedParams["loopDuration"] = loopDuration;
 
         // Store the preset
         if (instance.storedSonifications[instance.storeIndex]) {
@@ -1526,66 +1527,87 @@ async function recordToPreset(synthParameters, chordMode, instance) {
   }
 }
 
+function startCrossfadeLoop(audioBuffer, ind, playButton, instance) {
+  const transport = Tone.getTransport();
 
-    if (transport.state !== 'started') {
-      transport.start();
-    }
-  
-    let isPlayerAActive = true;
-    let nextStartTime = transport.seconds + loopDuration - crossfadeTime;
-  
-    const now = transport.seconds;
-    playerA.start(now);
-  
-
-    crossFade.fade.setValueAtTime(0, now); 
-
-    const scheduledEventIDs = [];
-  
-    function scheduleNextPlayback(time) {
-      const currentPlayer = isPlayerAActive ? playerA : playerB;
-      const nextPlayer = isPlayerAActive ? playerB : playerA;
-  
-      nextPlayer.start(time);
-  
-      crossFade.fade.setValueAtTime(isPlayerAActive ? 0 : 1, time);
-      crossFade.fade.linearRampToValueAtTime(isPlayerAActive ? 1 : 0, time + crossfadeTime);
-  
-      isPlayerAActive = !isPlayerAActive;
-      nextStartTime += loopDuration - crossfadeTime;
-  
-      const eventID = transport.scheduleOnce(scheduleNextPlayback, nextStartTime);
-      scheduledEventIDs.push(eventID);
-    }
-  
-    const firstEventID = transport.scheduleOnce(scheduleNextPlayback, nextStartTime);
-    scheduledEventIDs.push(firstEventID);
-  
-    instance.playbackStates[ind] = {
-      playerA,
-      playerB,
-      crossFade,
-      transport,
-      scheduledEventIDs,
-      stop: function () {
-        
-        playerA.stop();
-        playerA.dispose();
-        playerB.stop();
-        playerB.dispose();
-        crossFade.dispose();
-
-        scheduledEventIDs.forEach(id => transport.clear(id));
-
-        this.playerA = null;
-        this.playerB = null;
-        this.crossFade = null;
-        this.scheduledEventIDs = null;
-        
-      },
-    };
-    $(playButton).attr('class', "btn btn-success btn-lg");
+  // --- Get mapping for this stored preset ---
+  const storedParams = instance.storedSonifications[ind];
+  if (!storedParams || !storedParams.synthParams) {
+    console.error("No synthParams available for this preset index", ind);
+    return;
   }
+
+  const loopDuration = storedParams.loopDuration;
+  if (!loopDuration || isNaN(loopDuration) || loopDuration <= 0) {
+    console.error("No loopDuration stored for this preset");
+    return;
+  }
+
+  // --- Crossfade time: tiny, just for smoothness, but not more than ~50-100ms ---
+  const crossfadeTime = Math.min(0.12, loopDuration * 0.25);
+
+  // --- Player setup ---
+  const masterGain = new Tone.Gain(0.8).toDestination();
+  const playerA = new Tone.Player({ url: audioBuffer }).connect(masterGain);
+  const playerB = new Tone.Player({ url: audioBuffer }).connect(masterGain);
+
+  const crossFade = new Tone.CrossFade().connect(masterGain);
+  playerA.connect(crossFade.a);
+  playerB.connect(crossFade.b);
+
+  if (transport.state !== 'started') {
+    transport.start();
+  }
+
+  let isPlayerAActive = true;
+  let nextStartTime = transport.seconds + loopDuration - crossfadeTime;
+  const now = transport.seconds;
+  playerA.start(now);
+  crossFade.fade.setValueAtTime(0, now);
+
+  const scheduledEventIDs = [];
+
+  function scheduleNextPlayback(time) {
+    const nextPlayer = isPlayerAActive ? playerB : playerA;
+
+    nextPlayer.start(time);
+
+    // Fade to next player
+    crossFade.fade.setValueAtTime(isPlayerAActive ? 0 : 1, time);
+    crossFade.fade.linearRampToValueAtTime(isPlayerAActive ? 1 : 0, time + crossfadeTime);
+
+    isPlayerAActive = !isPlayerAActive;
+    nextStartTime += loopDuration - crossfadeTime;
+
+    const eventID = transport.scheduleOnce(scheduleNextPlayback, nextStartTime);
+    scheduledEventIDs.push(eventID);
+  }
+
+  const firstEventID = transport.scheduleOnce(scheduleNextPlayback, nextStartTime);
+  scheduledEventIDs.push(firstEventID);
+
+  instance.playbackStates[ind] = {
+    playerA,
+    playerB,
+    crossFade,
+    transport,
+    scheduledEventIDs,
+    stop: function () {
+      playerA.stop(); playerA.dispose();
+      playerB.stop(); playerB.dispose();
+      crossFade.dispose();
+
+      scheduledEventIDs.forEach(id => transport.clear(id));
+
+      this.playerA = null;
+      this.playerB = null;
+      this.crossFade = null;
+      this.scheduledEventIDs = null;
+    },
+  };
+
+  $(playButton).attr('class', "btn btn-success btn-lg");
+}
 
   function audioBufferToWav(buffer) {
     const numOfChan = buffer.numberOfChannels,
