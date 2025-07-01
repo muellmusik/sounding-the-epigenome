@@ -23,6 +23,13 @@ import './nouislider.css';
 
 import Tone from "tone";
 
+// ─── TONE PERFORMANCE TUNING ────────────────────────────────────────────────
+Tone.context.latencyHint   = "playback";
+Tone.context.lookAhead     = 0.1;         // poll every 100 ms
+Tone.Transport.latencyHint = "playback";
+Tone.Transport.lookAhead   = 0.1;
+// ────────────────────────────────────────────────────────────────────────────
+
 import './main.html';
 import './sliders.js';
 import * as Audio from './audio.js';
@@ -908,6 +915,7 @@ if (Meteor.isClient) {
           const effectsChain = synthData[4];
           disposeSynthAndEffects(synth, effectsChain);
         });
+        synthArray.length = 0;
       });
       // Clear the array after stopping and disposing
       instance.allSynths = [];
@@ -1206,9 +1214,11 @@ if (Meteor.isClient) {
     return synthParameters;
     
   }
+  
 
   function playSynths(synthParameters, chordMode, loop = false, instance) {
 
+    const masterGain = new Tone.Gain(0.8).toDestination();
     var synthArray = [];
     var loopInterval;
     var maxDur = 0.0;
@@ -1234,6 +1244,7 @@ if (Meteor.isClient) {
   
     function playSynthArray() {
       var when = Tone.now();
+      const staggerGap = 0.005;    // 5 ms between each row’s trigger
      
       var start = when;
       maxDur = 0.0;
@@ -1244,6 +1255,7 @@ if (Meteor.isClient) {
         var note = synthArray[s][2];
         var effectsChain = synthArray[s][4]; // Access effectsChain
         var params = synthArray[s][5];
+        
 
         if (effectsChain) {
           for (let effect of effectsChain) {
@@ -1254,10 +1266,15 @@ if (Meteor.isClient) {
           }
         }
 
-        synth.triggerAttackRelease(note, dur, when);
+        const offset = when + (Number(s) * staggerGap);
+
+        if (!synth._disposed) { 
+          synth.triggerAttackRelease(note, dur, offset);
+        }
         synthArray[s][6] = when;
         if (!chordMode) { when = when + dur; }
-        if (dur > maxDur) { maxDur = dur; }
+        const totalDur = dur + (Number(s) * staggerGap);
+        if (totalDur > maxDur) { maxDur = totalDur; }
       }
       
       if ((when - start) > maxDur) { maxDur = when - start; }
@@ -1266,7 +1283,21 @@ if (Meteor.isClient) {
         synthArray[s][3] = maxDur;
       }
 
-      if (!loop){
+    if (!loop){
+        // Compute FX/release tail for single playback cleanup
+        let maxReverb = 0, maxDelay = 0, maxRelease = 0;
+        for (var s in synthArray) {
+          const params = synthArray[s][5];
+          if (params.reverbDecay && params.selectedEffects?.includes('Reverb'))
+            maxReverb = Math.max(maxReverb, params.reverbDecay);
+          if (params.delayTime && params.selectedEffects?.includes('Delay'))
+            maxDelay = Math.max(maxDelay, params.delayTime);
+          if (params.release)
+            maxRelease = Math.max(maxRelease, params.release);
+        }
+        const fxTail = Math.max(maxReverb, maxDelay, maxRelease) * 3;
+        const cleanupDelay = (maxDur + fxTail) * 1000;
+
         setTimeout(function() {
           console.log("disposing synths and effects");
           for (var s in synthArray) {
@@ -1275,7 +1306,7 @@ if (Meteor.isClient) {
             disposeSynthAndEffects(synth, effectsChain);
           }
           synthArray.length = 0;
-        }, maxDur * 1500 + 1000);  // a little extra just in case
+        }, cleanupDelay + 200);  // little extra buffer
       }
     }
   
@@ -1330,9 +1361,9 @@ if (Meteor.isClient) {
       }
 
       if (effectsChain.length > 0) {
-        instrument.chain(...effectsChain, Tone.getDestination());
+        instrument.chain(...effectsChain, masterGain);
       } else {
-        instrument.toDestination();
+        instrument.connect(masterGain);
       }
 
       synthArray.push([instrument, Number(params["duration"]), Tone.Frequency(Number(params["midinote"]), "midi").toFrequency(),0, effectsChain, params,0]);
