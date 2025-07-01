@@ -1029,35 +1029,57 @@ if (Meteor.isClient) {
         } else {
           // Looping is disabled, implement trigger behavior
 
-          const player = new Tone.Player({
-            url: audioBuffer,
-            loop: false,
-            autostart: false,
-            fadeIn: 0.05,
-            fadeOut: 0.05,
-          }).toDestination();
+            const fadeIn  = 0.07;
+            const fadeOut = 0.07;
 
-          player.start();
-          $(playButton).attr('class', "btn btn-success btn-lg");
-    
-          // Reset the button after playback
-          player.onstop = () => {
-            $(playButton).attr('class', "btn btn-warning btn-lg");
-            delete instance.playbackStates[ind];
-          };
-    
-          // Store the player in playbackStates to manage it if needed
-          instance.playbackStates[ind] = {
-            player,
-            stop: function () {
-              player.stop();
-              player.dispose();
-            },
-          };
-          
-          setTimeout(() => {
-            player.stop();
-          }, audioBuffer.duration * 1000);
+            const player = new Tone.Player({
+              url:       audioBuffer,
+              loop:      false,
+              autostart: false,
+              fadeIn,
+              fadeOut,
+            }).toDestination();
+
+            let cleanedUp = false;
+            function cleanup() {
+              if (!cleanedUp) {
+                cleanedUp = true;
+                $(playButton).attr('class', "btn btn-warning btn-lg");
+                delete instance.playbackStates[ind];
+              }
+            }
+
+            // start playback & UI
+            player.start();
+            $(playButton).attr('class', "btn btn-success btn-lg");
+
+            // schedule stop at buffer end
+            const stopTimer = setTimeout(() => player.stop(), audioBuffer.duration * 1000);
+
+            // schedule UI reset just after fadeOut
+            const uiTimer = setTimeout(() => cleanup(),
+              (audioBuffer.duration/6) * 1000
+            );
+
+            // also handle the built-in onstop
+            player.onstop = () => {
+              clearTimeout(stopTimer);
+              clearTimeout(uiTimer);
+              cleanup();
+            };
+
+            // expose stop() for any external “stop all” logic
+            instance.playbackStates[ind] = {
+              player,
+              stop() {
+                clearTimeout(stopTimer);
+                clearTimeout(uiTimer);
+                player.stop();
+                player.dispose();
+                cleanup();
+              }
+            };
+
         }
       }
     }
