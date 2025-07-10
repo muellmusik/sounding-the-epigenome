@@ -23,7 +23,46 @@
 		<link rel="stylesheet" href="plugin/highlight/monokai.css">
 	</head>
 	<body>
+		<style>
+			.lang-button {
+				box-shadow: 0 4px 12px rgba(0,0,0,0.12); 
+				background-color:aliceblue; 
+				color:rgb(1, 43, 54); 
+				border-radius: 8px;
+				transition: all 0.3s ease;
+			}
+			.lang-button:hover {
+				background: rgb(209, 167, 39);
+				color: rgb(1, 43, 54);
+			}
+			.lang-button:active{
+				background: rgb(203, 75, 23);
+			}
+			.reveal a:hover { 
+				color: rgb(203, 75, 23) !important;
+				transition: all 0.3 ease !important;
+			}
+			[data-i18n] {
+				transition: opacity 0.15s ease;
+				opacity: 1;
+			}
+			.lang-fade {
+				opacity: 0 !important;
+			}
+		</style>
 		<div class="reveal">
+			<!-- language toggle buttons (always on the frame) -->
+
+			<div style="position:absolute; top:0.5rem; right:1rem; padding-right: 1rem; z-index:1000;">
+				<button id="lang-en" class="lang-button" style="margin-right:.5rem; width: 43px; height:30px; font-size: 1rem; "><strong>EN</strong></button>
+				<button id="lang-es" class="lang-button" style="width: 43px; height:30px; font-size: 1rem;"><strong>ES</strong></button>
+			</div>
+
+			<!-- hidden select to drive Internation -->
+			<select class="langchooser" style="display:none;">
+				<option value="en">English</option>
+				<option value="es">Español</option>
+			</select>
 			<div class="slides">
 				<section>
 					<section id="home" data-markdown style="text-align: center; font-size: 0.80em; overflow:auto !important; max-height: 100%;" data-menu-title="Home" >
@@ -308,7 +347,7 @@
 							<br><br>
 							<p style="text-align: left">
 								<audio controls style="width: clamp(333px, 35vw, 500px); max-width:100%; zoom:110%; height:45px;">
-									<source data-src="media/short attack sound.mp3" type="audio/mpeg">
+									<source src="media/short attack sound.mp3" type="audio/mpeg">
 									Your browser does not support the audio element.
 								</audio>
 							</p>
@@ -317,7 +356,7 @@
 						<br><br>
 							<p style="text-align: left">
 								<audio controls style="width: clamp(333px, 35vw, 500px); max-width:100%; zoom:110%; height:45px;">
-									<source data-src="media/long sustained sound.mp3" type="audio/mpeg">
+									<source src="media/long sustained sound.mp3" type="audio/mpeg">
 									Your browser does not support the audio element.
 								</audio>
 							</p>
@@ -326,7 +365,7 @@
 						<br><br>
 							<p style="text-align: left">
 								<audio controls style="width: clamp(333px, 35vw, 500px); max-width:100%; zoom:110%; height:45px;">
-									<source data-src="media/Sequence.mp3" type="audio/mpeg">
+									<source src="media/Sequence.mp3" type="audio/mpeg">
 									Your browser does not support the audio element.
 								</audio>
 							</p>
@@ -406,7 +445,7 @@
 
 							<p style="text-align: center">
 								<audio controls style="width: clamp(333px, 35vw, 500px); max-width:100%; zoom:110%; height:45px;">
-									<source data-src="media/parabola pitch.mp3" type="audio/mpeg">
+									<source src="media/parabola pitch.mp3" type="audio/mpeg">
 									Your browser does not support the audio element.
 								</audio>
 							</p>
@@ -499,7 +538,7 @@
 
 									<p style="text-align: center">
 										<audio controls style="width: clamp(333px, 35vw, 500px); max-width:100%; zoom:110%; height:45px;">
-											<source data-src="media/Auditory Icon - river flowing.mp3" type="audio/mpeg">
+											<source src="media/Auditory Icon - river flowing.mp3" type="audio/mpeg">
 												Your browser does not support the audio element.
 										</audio>
 									</p>
@@ -508,7 +547,7 @@
 
 									<p style="text-align: center">
 										<audio controls style="width: clamp(333px, 35vw, 500px); max-width:100%; zoom:110%; height:45px;">
-											<source data-src="media/Earcon - minimizing.mp3" type="audio/mpeg">
+											<source src="media/Earcon - minimizing.mp3" type="audio/mpeg">
 											Your browser does not support the audio element.
 										</audio>
 									</p>
@@ -544,7 +583,7 @@
 
 								<p style="text-align: center">
 									<audio controls style="width: clamp(333px, 35vw, 500px); max-width:100%; zoom:110%; height:45px;">
-										<source data-src="media/parabola amp.mp3" type="audio/mpeg">
+										<source src="media/parabola amp.mp3" type="audio/mpeg">
 											Your browser does not support the audio element.
 									</audio>
 							 </p>
@@ -706,7 +745,7 @@
 						</div>
 						</textarea>
 					</section>
-					</section>
+				</section>
 			</div>
 		</div>
 
@@ -724,6 +763,26 @@
 			// - https://github.com/hakimel/reveal.js#dependencies
 
 			// - The menu UI custom code, contains Link to the app under 'content' section
+			function smoothLanguageChange(lang) {
+			// Get all i18n elements
+			const elements = document.querySelectorAll('[data-i18n]');
+			// Fade out
+			elements.forEach(el => el.classList.add('lang-fade'));
+			setTimeout(() => {
+				// Switch language
+				const sel = document.querySelector('.langchooser');
+				sel.value = lang;
+				sel.dispatchEvent(new Event('change'));
+				// Fade in
+				setTimeout(() => {
+				elements.forEach(el => el.classList.remove('lang-fade'));
+				}, 2); // short delay to let DOM update text
+			}, 150); // matches CSS transition duration
+			}
+
+			document.getElementById('lang-en').addEventListener('click', () => smoothLanguageChange('en'));
+			document.getElementById('lang-es').addEventListener('click', () => smoothLanguageChange('es'));
+
 			Reveal.initialize({
 				width: "100%",
 				height: "100%",
@@ -732,8 +791,19 @@
 				maxScale: 1.0,
 
 				internation: {
-        		makejson: true
-    			},
+					locale:        'en',           
+					localename:    'English',        
+					langattribute: 'data-i18n',       
+					switchselector: '.langchooser',   
+					html:			true,              
+					makejson:		true,             
+					observe: 		true,
+					languages: {
+						en: { name: "English", dictionary: "en.json" },
+						es: { name: "Español", dictionary: "es.json" }
+					}
+				},
+
 				plugins: [ Internation, RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealMenu ],
 				menu: {
 						custom: [
