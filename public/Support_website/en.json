@@ -1,4 +1,28 @@
 {
+    "slide-menu": {
+        "menubar.slides":             "Slides",
+        "menubar.go_to":              "Go to…",
+        "menubar.home":               "Home",
+        "menubar.about":              "About Sounding the Epigenome",
+        "menubar.credits":            "Credits",
+        "menubar.epigenetics":        "Epigenetics",
+        "menubar.whatisit":           "What is it?",
+        "menubar.soundsynthesis":     "Sound Synthesis",
+        "menubar.intro":              "Introduction",
+        "menubar.adsrandparams":      "ADSR envelope and other parameters",
+        "menubar.sonification":       "Sonification",
+        "menubar.whatisit4":          "What is it for?",
+        "menubar.sonification-techniques": "Sonification techniques and approaches",
+        "menubar.mapping":            "Mapping Topology",
+        "menubar.pmsonifunc":         "Functions of parameter mapping sonification",
+        "menubar.appmapping":         "Mapping in the app",
+        "menubar.appinstructions":    "App instructions",
+        "menubar.instructions":       "The Instructions",
+        "menubar.link_app":           "Sounding the Epigenome App",
+        "menubar.link_membra":        "MEMBRA",
+        "menubar.link_uniandes":      "Universidad de los Andes",
+        "menubar.link_cna":           "Centro Nacional de las Artes"
+    },
     "slides": {
         "home": {
             "title": "Sounding the Epigenome",
@@ -58,12 +82,6 @@
         "instructions": {
             "app-instructions": "1. Choose a Dataset. There is a drop down menu of [x number] datasets to choose from.<ol start=\"2\"><li><p>Select the starting row of data for sonification.</p></li><li><p>Select a desired number of consecutive rows of data to add to the sonification.</p></li><li><p>Choose your instrument. The default loaded instrument is a basic oscillator.</p></li><li><p>Select oscillator type if appropriate, and add any number of desired effects.</p></li><li><p>In the mapping table, choose which sound parameters (horizontal axis) are addressed to each data parameter (vertical axis).</p></li><li><p>Use the vertical sliders to adjust the ranges of sound parameters.</p></li><li><p>Choose whether this is to be played as a chord or sequence.</p></li><li><p>Select your preferred scale and set a tempo.</p></li><li><p>Press PLAY to take a listen to the sound.</p></li><li><p>Press STOP to stop the sound.</p></li><li><p>Change the mapping, or any of the above settings and listen again.</p></li><li><p>You can also loop the sound by clicking on the round arrow button.</p></li><li><p>Once you are happy with the sound press the plus button. This will save the sound to a button bottom right and it will change colour to orange. You can remove any added sounds by pressing the minus button.</p></li><li><p>Press the button to hear the sound again.</p></li><li><p>Create up to 9 sounds. Press the buttons to start to create a rhythm, combination, music sequence from the sounds. You can also use the corresponding keyboard number buttons (1-9) to trigger the sounds.</p></li><li><p>You can record your session and save it as a <em>.wav</em> audio file. Press the circle button once to start the recording. Press it again to stop.</p></li></ol><p><br><strong>NOTE</strong>: You can currently add, remove and overwrite the stored sounds chronologically.</p><p style=\"text-align: center\">    <br>    <a href=\"#/about\">Back to the demo performance video</a>    <br><br>    <!-- Link to the app here-->    <a href=\"https://beast.cal.bham.ac.uk/sounding/index.html\"style=\"font-size:1.5em;\"target=\"_blank\">Go to the App</a></p>"
         }
-    },
-    "menubar": {
-        "menubar.go_to": "Go to…",
-        "menubar.link_app": "Sounding the Epigenome App",
-        "menubar.link_membra": "MEMBRA",
-        "menubar.link_uniandes": "Universidad de los Andes",
-        "menubar.link_cna": "Centro Nacional de las Artes"
     }
+
 }

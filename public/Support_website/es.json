@@ -1,4 +1,29 @@
 {
+    "slide-menu": {
+        "menubar.slides":             "Diapositivas",
+        "menubar.go_to":              "Ir a…",
+        "menubar.home":               "Inicio",
+        "menubar.about":              "Acerca de Sounding the Epigenome",
+        "menubar.credits":            "Créditos",
+        "menubar.epigenetics":        "Epigenética",
+        "menubar.whatisit":           "¿Qué es?",
+        "menubar.soundsynthesis":     "Síntesis de sonido",
+        "menubar.intro":              "Introducción",
+        "menubar.adsrandparams":      "Envolvente ADSR y otros parámetros",
+        "menubar.sonification":       "Sonificación",
+        "menubar.whatisit4":          "¿Para qué sirve?",
+        "menubar.sonification-techniques": "Técnicas y enfoques de sonificación",
+        "menubar.mapping":            "Topología de mapeo",
+        "menubar.pmsonifunc":         "Funciones de sonificación por mapeo de parámetros",
+        "menubar.appmapping":         "Mapeo en la aplicación",
+        "menubar.appinstructions":    "Instrucciones de la aplicación",
+        "menubar.instructions":       "Las instrucciones",
+        "menubar.link_app":           "Aplicación Sounding the Epigenome",
+        "menubar.link_membra":        "MEMBRA",
+        "menubar.link_uniandes":      "Universidad de los Andes",
+        "menubar.link_cna":           "Centro Nacional de las Artes"
+    },
+
     "slides": {
         "home": {
             "title": "Sonificando el Epigenoma",
@@ -58,12 +83,6 @@
         "instructions": {
             "app-instructions": "1. Elige un conjunto de datos. Hay un menú desplegable de [x número] conjuntos de datos para elegir.<ol start=\"2\"><li><p>Selecciona la fila inicial de los datos para la sonificación.</p></li><li><p>Selecciona el número deseado de filas consecutivas de datos para añadir a la sonificación.</p></li><li><p>Elige tu instrumento. El instrumento predeterminado es un oscilador básico.</p></li><li><p>Selecciona el tipo de oscilador si es apropiado y añade cualquier número de efectos deseados.</p></li><li><p>En la tabla de mapeo, elige qué parámetros de sonido (eje horizontal) se asignan a cada parámetro de datos (eje vertical).</p></li><li><p>Utiliza los deslizadores verticales para ajustar los rangos de los parámetros de sonido.</p></li><li><p>Elige si deseas reproducirlo como un acorde o secuencia.</p></li><li><p>Selecciona tu escala preferida y ajusta el tempo.</p></li><li><p>Presiona PLAY para escuchar el sonido.</p></li><li><p>Presiona STOP para detener el sonido.</p></li><li><p>Cambia el mapeo, o cualquier configuración anterior y vuelve a escuchar.</p></li><li><p>También puedes hacer un bucle del sonido haciendo clic en el botón de flecha circular.</p></li><li><p>Una vez que estés satisfecho con el sonido, presiona el botón más. Esto guardará el sonido en un botón abajo a la derecha y cambiará de color a naranja. Puedes quitar cualquier sonido añadido presionando el botón menos.</p></li><li><p>Presiona el botón para escuchar el sonido nuevamente.</p></li><li><p>Crea hasta 9 sonidos. Presiona los botones para empezar a crear un ritmo, combinación o secuencia musical con los sonidos. También puedes usar las teclas de número correspondientes del teclado (1-9) para activar los sonidos.</p></li><li><p>Puedes grabar tu sesión y guardarla como un archivo de audio <em>.wav</em>. Presiona el botón circular una vez para empezar la grabación. Presiona de nuevo para detener.</p></li></ol><p><br><strong>NOTA</strong>: Actualmente puedes añadir, quitar y sobrescribir los sonidos guardados de forma cronológica.</p><p style=\"text-align: center\">    <br>    <a href=\"#/about\">Volver al video de demostración</a>    <br><br>    <!-- Link to the app here-->    <a href=\"https://beast.cal.bham.ac.uk/sounding/index.html\"style=\"font-size:1.5em;\"target=\"_blank\">Ir a la App</a></p>"
         }
-    },
-    "menubar": {
-        "menubar.go_to": "Ir a…",
-        "menubar.link_app": "App Sonificando el Epigenoma",
-        "menubar.link_membra": "MEMBRA",
-        "menubar.link_uniandes": "Universidad de los Andes",
-        "menubar.link_cna": "Centro Nacional de las Artes"
     }
+
 }

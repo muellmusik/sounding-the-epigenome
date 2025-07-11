@@ -11,7 +11,7 @@
   gtag('config', 'G-0GBDEFF9KX');
 </script>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=1.0, user-scalable=yes">
+		<meta name="viewport" content="width=device-width, initial-scale=0.7, maximum-scale=1.0, user-scalable=no">
 
 		<title>StEg app support website</title>
 
@@ -21,9 +21,132 @@
 
 		<!-- Theme used for syntax highlighting of code -->
 		<link rel="stylesheet" href="plugin/highlight/monokai.css">
-	</head>
-	<body>
 		<style>
+			#slide-menu-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding-top: 0;
+				padding-left: 0.5em;
+				padding-right: 0.5em;
+				background: rgba(1, 24, 30, 0.623);
+				border-bottom: 1px solid #ccc;
+			}
+			#slide-menu-header button {
+				background: transparent;
+				border: none;
+				font: inherit;
+				font-size: 1.05rem;
+				cursor: pointer;
+				padding: 0.5em 1em;
+				color: whitesmoke;
+			}
+
+			#slide-menu-header button:hover {
+				color: rgb(203, 75, 23) !important;
+			}
+
+			#slide-menu-header button.active {
+				font-weight: bold;
+				color: rgb(208, 93, 48) !important;
+				border-bottom: 2px solid currentColor;
+			}
+			
+			.slide-menu-panel { display: none; padding: 0; }
+
+			.slide-menu-panel.active { display: block; }
+
+			#slide-menu #panel-goto .slide-menu-items li + li {
+				margin-top: 0.95rem;
+				border-bottom: none; 
+			}
+			#slide-menu #panel-goto .slide-menu-items > li {
+				border-bottom: none; 
+			}
+
+
+			#slide-menu {
+				position: fixed;
+				top: 0; left: -353px;
+				height: 100vh; width: 353px;
+				background: rgb(3, 59, 73);
+				box-shadow: 2px 0 12px rgba(0,0,0,0.2);
+				transition: left 0.2s ease;
+				z-index: 10002;
+				overflow-y: auto;
+				font-size: 1.05rem;
+				line-height: 1.13;
+			}
+			 #slide-menu .slide-menu-items {
+				list-style: none;
+				color: whitesmoke;
+			
+			}
+			#slide-menu .slide-menu-items > li {
+				border-bottom: 1px solid rgba(255,255,255,0.3);
+				padding-bottom: 0.15em;
+				margin: 0.2em 0;
+			}
+
+			#slide-menu .slide-menu-items > li > ul {
+				list-style-type: disc;
+				margin: 0.2em 0 0.2em 1.2em;
+				padding: 0;
+			}
+			#slide-menu .slide-menu-items > li > ul > li {
+				margin: 0.2em 0.1em;
+			}
+
+			#slide-menu .slide-menu-items > li > a {
+				font-weight: bold;
+			}
+				#slide-menu.open {
+				left: 0;
+			}
+				#slide-menu-close {
+				display: block;
+				margin: .5rem;
+				background: none;
+				border: none;
+				font-size: 1.49rem !important;
+				cursor: pointer;
+				color: whitesmoke !important;
+			}
+			#slide-menu-close:hover {
+				color: rgb(203, 75, 23) !important;
+			}
+				#slide-menu ul {
+				padding: 1rem;
+				list-style: none;
+				margin: 0;
+			}
+				#slide-menu ul li + li {
+				margin-top: .95rem;
+			}
+				#slide-menu-toggle {
+				position: fixed;
+				bottom: 1rem;
+				left: 1rem;
+				z-index: 10001;
+				background: transparent;
+				border: none;
+				color: #3b89fd !important;
+				padding: .5rem .75rem;
+				border-radius: 4px;
+				font-size: 2.1rem;
+				cursor: pointer;
+			}
+				#slide-menu-toggle:hover {
+				color:  #87b7ff !important;
+			}
+			
+			#slide-menu,
+			#slide-menu *,
+			#slide-menu-toggle,
+			#slide-menu-close {
+			font-family: inherit;
+			color:       inherit;
+			}
 			.lang-button {
 				box-shadow: 0 4px 12px rgba(0,0,0,0.12); 
 				background-color:aliceblue; 
@@ -50,6 +173,8 @@
 				opacity: 0 !important;
 			}
 		</style>
+	</head>
+	<body>
 		<div class="reveal">
 			<!-- language toggle buttons (always on the frame) -->
 
@@ -65,7 +190,7 @@
 			</select>
 			<div class="slides">
 				<section>
-					<section id="home" data-markdown style="text-align: center; font-size: 0.80em; overflow:auto !important; max-height: 100%;" data-menu-title="Home" >
+					<section id="home" data-markdown style="text-align: center; font-size: 0.80em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
 								# <div style="text-align: center" data-i18n="title">Sounding the Epigenome</div>
 								## <div style="text-align: center;color: #3b89fd" data-i18n="subtitle"><strong>Interactive Epigenetic Sonification System</strong></div>
@@ -79,7 +204,7 @@
 
 						</textarea>
 					</section>
-					<section id="about" data-markdown style="text-align: center; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="About Sounding the Epigenome">
+					<section id="about" data-markdown style="text-align: center; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
 								THIS VIDEO NEEDS TO BE CHANGED! <br>
 								<video class="stretch" controls data-autoplay src="media/IPSOS_demo_video.mp4" style="background:none; border:none; box-shadow:none; width: clamp(500px, 55vw, 100vw); max-width: 100%; height:auto;" title="IPSOS app"><em>Oops! Sorry, it seems your browser is old! Try updating or using a different one to play this video.</em></video>
@@ -101,7 +226,7 @@
 							</textarea>
 						</section>
 
-						<section id="credits" data-markdown style="text-align: center; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="Credits" >
+						<section id="credits" data-markdown style="text-align: center; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 							<textarea data-template>
 
 						<div data-i18n="creditsinner" style="font-size: clamp(1.35rem, 1vw, 2rem);"><strong>Sounding the Epigenome project is a collaboration between:</strong>
@@ -192,12 +317,12 @@
 
 			</section>
 			<section data-transition="fade-in fade-out">
-					<section id="epigenetics" data-markdown style="text-align: center; font-size: 0.80em; max-height: 100%;" data-menu-title="Epigenetics">
+					<section id="epigenetics" data-markdown style="text-align: center; font-size: 0.80em; max-height: 100%;">
 						<textarea data-template>
 							# <div data-i18n="epigenetics">Epigenetics</div>
 						</textarea>
 					</section>
-					<section id="whatisit" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="What is it?">
+					<section id="whatisit" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
 							## <div data-i18n="whatisit">What is it?</div>
 							<br>
@@ -236,12 +361,12 @@
 					</section>
 				</section>
 				<section data-transition="fade-in fade-out">
-					<section id="synthesis-title" data-markdown style="text-align: center; font-size: 0.80em; max-height: 100%;" data-menu-title="Sound Synthesis">
+					<section id="synthesis-title" data-markdown style="text-align: center; font-size: 0.80em; max-height: 100%;">
 						<textarea data-template>
 							# <div data-i18n="synthesis">Sound Synthesis</div>
 						</textarea>
 					</section>
-					<section id="synthesis-intro" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="Introduction">
+					<section id="synthesis-intro" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
 							<div data-i18n="synthesis-discussion" style="font-size: clamp(1.35rem, 1vw, 2rem);">
 							<p style="text-align: center">
@@ -316,7 +441,7 @@
 						</div>
 						</textarea>
 					</section>
-					<section id="adsr-and-params" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="ADSR envelope and other parameters">
+					<section id="adsr-and-params" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
 							<div data-i18n="adsr-description" style="font-size: clamp(1.35rem, 1vw, 2rem);">
 
@@ -408,12 +533,12 @@
 					</section>
 				</section>
 				<section data-transition="fade-in fade-out">
-					<section id="sonification" data-markdown style="text-align: center; font-size: 0.80em; max-height: 100%;" data-menu-title="Sonification">
+					<section id="sonification" data-markdown style="text-align: center; font-size: 0.80em; max-height: 100%;">
 						<textarea data-template>
 							# <div data-i18n="sonification-title">Sonification</div>
 						</textarea>
 					</section>
-					<section id="what-is-sonification" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="What is it?">
+					<section id="what-is-sonification" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
 							<div data-i18n="sonification-discussion" style="font-size: clamp(1.35rem, 1vw, 2rem);">
 							
@@ -452,7 +577,7 @@
 						</div>
 						</textarea>
 					</section>
-					<section id="sonification-what-for" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="What is it for?">
+					<section id="sonification-what-for" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
 							<div data-i18n="sonification-what-for" style="font-size: clamp(1.35rem, 1vw, 2rem);">
 							
@@ -520,7 +645,7 @@
 							</div>
 							</textarea>
 						</section>
-						<section id="sonification-techniques" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="Sonification techniques and approaches">
+						<section id="sonification-techniques" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 							<textarea data-template>
 								<div data-i18n="sonification-techniques-and-approaches" style="font-size: clamp(1.35rem, 1vw, 2rem);">
 									
@@ -590,7 +715,7 @@
 						 </div>
 					 </textarea>
 				 </section>
-				 <section id="mapping-topology" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="Mapping Topology">
+				 <section id="mapping-topology" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 					 <textarea data-template>
 						 <div data-i18n="mapping-topology" style="font-size: clamp(1.35rem, 1vw, 2rem);">
 						
@@ -627,7 +752,7 @@
 					 </div>
 					 </textarea>
 				 </section>
-				 <section id="functions-of-pm-sonification" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="Functions of parameter mapping sonification">
+				 <section id="functions-of-pm-sonification" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 					 <textarea data-template>
 						 <div data-i18n="pm-sonification-functions" style="font-size: clamp(1.35rem, 1vw, 2rem);">
 
@@ -670,7 +795,7 @@
 					 </div>
 					 </textarea>
 				 </section>
-				 <section id="mapping-in-the-app" data-markdown style="text-align: center; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="Mapping in the app">
+				 <section id="mapping-in-the-app" data-markdown style="text-align: center; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 					 <textarea data-template>
 
 						 <div data-i18n="mapping-in-app" style="font-size: clamp(1.35rem, 1vw, 2rem);">
@@ -691,12 +816,12 @@
 				 </section>
 				</section>
 				<section data-transition="fade-in fade-out">
-					<section id="instructions-title" data-markdown style="text-align: center; font-size: 0.80em; max-height: 100%;" data-menu-title="App instructions">
+					<section id="instructions-title" data-markdown style="text-align: center; font-size: 0.80em; max-height: 100%;">
 						<textarea data-template>
 							#	<div data-i18n="instructions-title">App Instructions</div>
 						</textarea>
 					</section>
-				 	<section id="instructions" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;" data-menu-title="The instructions">
+				 	<section id="instructions" data-markdown style="text-align: left; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
 							<div data-i18n="app-instructions" style="font-size: clamp(1.35rem, 1vw, 2rem);">
 							<ol style="padding-left: 1em; margin: 0;">
@@ -733,6 +858,53 @@
 					</section>
 				</section>
 			</div>
+			<div id="slide-menu">
+				<div id="slide-menu-header">
+					<button id="btn-slides" class="active" data-target="panel-slides" data-i18n="menubar.slides">Slides</button>
+					<button id="btn-goto"        data-target="panel-goto"   data-i18n="menubar.go_to">Go to…</button>
+					<button id="slide-menu-close">&times;</button>
+				</div>
+				<div id="panel-slides" class="slide-menu-panel active">
+					<ul class="slide-menu-items">
+						<li><a href="#/home" data-i18n="menubar.home">Home</a></li>
+						<ul>
+							<li><a href="#/about" data-i18n="menubar.about">About Sounding the Epigenome</a></li>
+							<li><a href="#/credits" data-i18n="menubar.credits">Credits</a></li>
+						</ul>
+						<li><a href="#/epigenetics" data-i18n="menubar.epigenetics">Epigenetics</a></li>
+						<ul>
+							<li><a href="#/whatisit" data-i18n="menubar.whatisit">What is it?</a></li>
+						</ul>
+						<li><a href="#/synthesis-title" data-i18n="menubar.soundsynthesis">Sound Synthesis</a></li>
+						<ul>
+							<li><a href="#/synthesis-intro" data-i18n="menubar.intro">Introduction</a></li>
+							<li><a href="#/adsr-and-params" data-i18n="menubar.adsrandparams">ADSR envelope and other parameters</a></li>
+						</ul>
+						<li><a href="#/sonification" data-i18n="menubar.sonification">Sonification</a></li>
+						<ul>
+							<li><a href="#/what-is-sonification" data-i18n="menubar.whatisit">What is it?</a></li>
+							<li><a href="#/sonification-what-for" data-i18n="menubar.whatisit4">What is it for?</a></li>
+							<li><a href="#/sonification-techniques" data-i18n="menubar.sonification-techniques">Sonification techniques and approaches</a></li>
+							<li><a href="#/mapping-topology" data-i18n="menubar.mapping">Mapping Topology</a></li>
+							<li><a href="#/functions-of-pm-sonification" data-i18n="menubar.pmsonifunc">Functions of parameter mapping sonification</a></li>
+							<li><a href="#/mapping-in-the-app" data-i18n="menubar.appmapping">Mapping in the app</a></li>
+						</ul>
+						<li><a href="#/instructions-title" data-i18n="menubar.appinstructions">App instructions</a></li>
+						<ul>
+						<li><a href="#/instructions" data-i18n="menubar.instructions">The Instructions</a></li>
+						</ul>
+					</ul>
+				</div>
+				<div id="panel-goto" class="slide-menu-panel">
+					<ul class="slide-menu-items">
+						<li><a href="https://beast.cal.bham.ac.uk/sounding/index.html" target="_blank" data-i18n="menubar.link_app">Sounding the Epigenome App</a></li>
+						<li><a href="https://www.uktreescapes.org/projects/membra/"      target="_blank" data-i18n="menubar.link_membra">MEMBRA</a></li>
+						<li><a href="https://musica.uniandes.edu.co/"                    target="_blank" data-i18n="menubar.link_uniandes">Universidad de los Andes</a></li>
+						<li><a href="https://eneldelia.gov.co/"                          target="_blank" data-i18n="menubar.link_cna">Centro Nacional de las Artes</a></li>
+					</ul>
+				</div>
+			</div>
+			<button id="slide-menu-toggle" title="Menu">&#9776;</button>
 		</div>
 
 		<script src="dist/reveal.js"></script>
@@ -741,7 +913,6 @@
 		<script src="plugin/highlight/highlight.js"></script>
 		<script src="plugin/notes/notes.js"></script>
 		<script src="plugin/zoom/zoom.js"></script>
-		<script src="plugin/reveal.js-menu/menu.js"></script>
 
 		<script>
 			// More info about config & dependencies:
@@ -769,6 +940,35 @@
 			document.getElementById('lang-en').addEventListener('click', () => smoothLanguageChange('en'));
 			document.getElementById('lang-es').addEventListener('click', () => smoothLanguageChange('es'));
 
+			document.querySelectorAll('#slide-menu-header button[data-target]').forEach(btn=>{
+				btn.addEventListener('click',()=>{
+				// set active tab button
+				document.querySelectorAll('#slide-menu-header button').forEach(b=>b.classList.remove('active'))
+				btn.classList.add('active');
+				// show corresponding panel
+				document.querySelectorAll('.slide-menu-panel').forEach(p=>p.classList.remove('active'));
+				document.getElementById(btn.dataset.target).classList.add('active');
+				});
+			});
+			// open/close logic (unchanged)
+			document.getElementById('slide-menu-toggle').addEventListener('click',()=>{
+				document.getElementById('slide-menu').classList.toggle('open');
+			});
+			document.getElementById('slide-menu-close').addEventListener('click',()=>{
+				document.getElementById('slide-menu').classList.remove('open');
+			});
+
+			document.addEventListener('click', (e) => {
+				const menu   = document.getElementById('slide-menu');
+				const toggle = document.getElementById('slide-menu-toggle');
+				if ( menu.classList.contains('open')
+					&& !menu.contains(e.target)
+					&& e.target !== toggle
+				) {
+					menu.classList.remove('open');
+				}
+			});
+
 			Reveal.initialize({
 				width: "100%",
 				height: "100%",
@@ -790,12 +990,7 @@
 					}
 				},
 
-				plugins: [ Internation, RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom, RevealMenu ],
-				menu: {
-						custom: [
-									{ title: 'Go to...', icon: '<i class="fa fa-arrow-circle-right">', content: '<ul class="slide-menu-items"><li class="slide-menu-item"><a href="https://beast.cal.bham.ac.uk/sounding/index.html" target="_blank">Sounding the Epigenome App</a></li><li class="slide-menu-item"><a href="https://www.uktreescapes.org/projects/membra/" target="_blank">MEMBRA</a></li><li class="slide-menu-item"><a href="https://musica.uniandes.edu.co/" target="_blank">Universidad de los Andes</a></li><li class="slide-menu-item"><a href="https://eneldelia.gov.co/" target="_blank">Centro Nacional de las Artes</a></li></ul>'}
-								]
-				}
+				plugins: [ Internation, RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom  ]
 			});
 		</script>
 	</body>
