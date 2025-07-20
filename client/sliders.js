@@ -54,6 +54,20 @@ Template.StEg_app.onRendered(function () {
     const instance = this;
     const sliderElements = [];
     let previousListParams = [];
+
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
+    `;
+    document.head.appendChild(styleTag);
   
     instance.autorun(function () {
       const listParamsData = instance.listParams.get();
@@ -84,27 +98,7 @@ Template.StEg_app.onRendered(function () {
 
         sliderElements.length = 0;
 
-        // Rebuild the sliders table based on listParams
-        slidersContainer.innerHTML = `
-          <thead class="thead-light">
-            <tr class="text-center">
-              ${listParams.map((param) => `<th class="text-light">${param.label}</th>`).join('')}
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="text-center">
-              ${listParams.map((param) => `<td><span id="${param.key}-low" class="text-light"></span></td>`).join('')}
-            </tr>
-            <tr class="text-center">
-              ${listParams.map((param) => `<td><div id="${param.key}" class="rangeslider"></div></td>`).join('')}
-            </tr>
-            <tr class="text-center">
-              ${listParams.map((param) => `<td><span id="${param.key}-high" class="text-light"></span></td>`).join('')}
-            </tr>
-          </tbody>
-        `;
-  
-        // Define slider settings for each parameter here:
+                // Define slider settings for each parameter here:
         const sliderSettings = {
           // Instrument parameters
           midinote: { step: 0.1, min: 0, max: 127 },
@@ -144,8 +138,60 @@ Template.StEg_app.onRendered(function () {
   
         // Default settings for parameters not explicitly defined
         const defaultSettings = { step: 0.01, min: 0, max: 1 };
-  
-        listParams.forEach((param) => {
+
+        // Rebuild the sliders table based on listParams
+        slidersContainer.innerHTML = `
+          <thead class="thead-light">
+            <tr class="text-center">
+              ${listParams.map(param => `<th class="text-light">${param.label}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="text-center">
+              ${listParams.map((param) => {
+                const { step, min, max } = sliderSettings[param.key] || defaultSettings;
+                return `
+                <td>
+                  <input
+                    type="number"
+                    id="${param.key}-low"
+                    class="form-control form-control-sm text-light"
+                    style="background:transparent;border:none;width:4em;max-width:100%;display:block;margin:0 auto;text-align:center;"
+                    role="spinbutton"
+                    min="${min}" max="${max}" step="${step}"
+                    aria-valuemin="${min}" aria-valuemax="${max}"
+                    aria-label="${param.label} lower limit. Range: ${min} to ${max}"
+                  />
+                </td>
+              `;
+            }).join('')}
+            </tr>
+            <tr class="text-center" aria-hidden="true">
+              ${listParams.map(param => `<td><div id="${param.key}" class="rangeslider"></div></td>`).join('')}
+            </tr>
+            <tr class="text-center">
+              ${listParams.map((param) => {
+                const { step, min, max } = sliderSettings[param.key] || defaultSettings;
+                return `
+                <td>
+                  <input
+                    type="number"
+                    id="${param.key}-high"
+                    class="form-control form-control-sm text-light"
+                    style="background:transparent;border:none;width:4em;max-width:100%;display:block;margin:0 auto;text-align:center;"
+                    role="spinbutton"
+                    min="${min}" max="${max}" step="${step}"
+                    aria-valuemin="${min}" aria-valuemax="${max}"
+                    aria-label="${param.label} upper limit. Range: ${min} to ${max}"
+                  />
+                </td>
+              `;
+            }).join('')}
+            </tr>
+          </tbody>
+        `;
+
+        listParams.forEach((param, idx) => {
 
           const key = param.key;
           // Get the settings for the current parameter, or use default settings
@@ -154,8 +200,6 @@ Template.StEg_app.onRendered(function () {
           const initialValues = Session.get(key) || [min, max];
   
           const sliderElement = document.getElementById(key);
-          const lowSpan = document.getElementById(`${key}-low`);
-          const highSpan = document.getElementById(`${key}-high`);
   
           if (sliderElement) {
 
@@ -179,23 +223,91 @@ Template.StEg_app.onRendered(function () {
               },
             });
 
-            sliderElements.push(sliderElement);
+            sliderElement.querySelectorAll('.noUi-handle').forEach(h => {
+            h.setAttribute('tabindex', '-1');
+            });
 
-            // Set initial values of spans
-            lowSpan.textContent = parseFloat(initialValues[0]).toFixed(2);
-            highSpan.textContent = parseFloat(initialValues[1]).toFixed(2);
+            const lowInput  = document.getElementById(`${param.key}-low`);
+            const highInput = document.getElementById(`${param.key}-high`);
+
+            lowInput.value  = initialValues[0].toFixed(2);
+            highInput.value = initialValues[1].toFixed(2);
+
+            sliderElements.push(sliderElement);
   
             sliderElement.noUiSlider.on('slide', (values) => {
               Session.set(key, [parseFloat(values[0]), parseFloat(values[1])]);
-              lowSpan.textContent = parseFloat(values[0]).toFixed(2);
-              highSpan.textContent = parseFloat(values[1]).toFixed(2);
+              lowInput.value  = parseFloat(values[0]).toFixed(2);
+              highInput.value = parseFloat(values[1]).toFixed(2);
             });
-  
             sliderElement.noUiSlider.on('change', (values) => {
               Session.set(key, [parseFloat(values[0]), parseFloat(values[1])]);
             });
+
+            lowInput.addEventListener('change', () => {
+
+              let lo = parseFloat(lowInput.value) || 0;
+              let hi = parseFloat(highInput.value) || lo;
+
+              lo = Math.max(min, Math.min(lo, max));
+              hi = Math.max(min, Math.min(hi, max));
+
+              if (lo > hi) {
+                hi = lo;
+              }
+
+              lowInput.value  = lo.toFixed(2);
+              highInput.value = hi.toFixed(2);
+
+              sliderElement.noUiSlider.set([ lo, hi ]);
+              Session.set(key, [ lo, hi ]);
+            });
+
+            highInput.addEventListener('change', () => {
+
+              let lo = parseFloat(lowInput.value) || 0;
+              let hi = parseFloat(highInput.value) || 0;
+
+              lo = Math.max(min, Math.min(lo, max));
+              hi = Math.max(min, Math.min(hi, max));
+
+              if (hi < lo) {
+                lo = hi;
+              }
+
+              lowInput.value  = lo.toFixed(2);
+              highInput.value = hi.toFixed(2);
+
+              sliderElement.noUiSlider.set([ lo, hi ]);
+              Session.set(key, [ lo, hi ]);
+            });
           }
         });
+          Meteor.defer(() => {
+            // 1) figure out the last positive tabindex in the page
+            const positive = Array.from(document.querySelectorAll('[tabindex]'))
+              .map(el => el.tabIndex)
+              .filter(n => n > 0);
+            const baseTab = positive.length ? Math.max(...positive) : 0;
+
+            // 2) give mapping-table radios the first new slot (baseTab+1)
+            const mappingRadios = document.querySelectorAll(
+              '#matrix-table input[type="radio"]'
+            );
+            mappingRadios.forEach(radio => {
+              radio.tabIndex = baseTab + 1;
+            });
+
+            // 3) then assign your range inputs starting at baseTab+2,
+            //    interleaving low/high per column
+            let t = baseTab + 2;
+            listParams.forEach(param => {
+              const low  = document.getElementById(`${param.key}-low`);
+              const high = document.getElementById(`${param.key}-high`);
+              if (low)  low.tabIndex  = t++;
+              if (high) high.tabIndex = t++;
+            });
+          });
       }
     });
 
