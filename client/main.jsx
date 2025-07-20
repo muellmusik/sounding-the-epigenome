@@ -734,14 +734,33 @@ if (Meteor.isClient) {
           fileContent.set(e.target.result);
           instance.columnOptions.set(parseColumns(e.target.result));
           const rows = (e.target.result).trim().split('\n');
+          const maxRow = rows.length;
 
           const rowRangeContainer = document.getElementById('rowRangeContainer');
           rowRangeContainer.style.display = 'block';
+
+          const startRowInput = document.getElementById('startRowInput');
+          const endRowInput = document.getElementById('endRowInput');
+
+          startRowInput.setAttribute('max', maxRow);
+          startRowInput.setAttribute('aria-valuemin', '1');
+          startRowInput.setAttribute('aria-valuemax', String(maxRow));
+          startRowInput.setAttribute('aria-label', 'Set start row number. Range: 1 to' + String(maxRow));
+
+          endRowInput.setAttribute('max', maxRow);
+          endRowInput.setAttribute('aria-valuemin', '1');
+          endRowInput.setAttribute('aria-valuemax', String(maxRow));
+          endRowInput.setAttribute('aria-label', 'Set end row number. Range: 1 to' + String(maxRow));
 
           const slider = document.getElementById('slider');
           sliderInstance = noUiSlider.create(slider, {
             start: [1, rows.length],
             connect: true,
+            handles: 2,
+            handleAttributes: [
+              { 'tabindex': -1 },
+              { 'tabindex': -1 },
+            ],
             range: {
               'min': 1,
               'max': rows.length
@@ -750,8 +769,7 @@ if (Meteor.isClient) {
           });
 
           // Sync the slider with the text inputs
-          const startRowInput = document.getElementById('startRowInput');
-          const endRowInput = document.getElementById('endRowInput');
+
 
           sliderInstance.on('update', function (values) {
             startRowInput.value = Math.round(values[0]);
@@ -1954,7 +1972,7 @@ if (Meteor.isClient) {
   function populateInminInmaxForm(numericColumnRanges) {
     
     const form = document.getElementById('inminInmaxForm');
-    form.innerHTML = '<div class="row text-center mb-1"> <div class="col-3 mb-1 offset-md-5 text-light "><b>Min:</b></div> <div class="col-3 mb-1 text-light"><b>Max:</b></div></div>'; // Clear any existing content
+    form.innerHTML = '<div class="row text-center mb-1"> <div class="col-3 mb-1 offset-md-5 text-light " aria-hidden="true"><b>Min:</b></div> <div class="col-3 mb-1 text-light" aria-hidden="true"><b>Max:</b></div></div>'; // Clear any existing content
 
     Object.keys(numericColumnRanges).forEach((key) => {
       const minValue = numericColumnRanges[key].min;
@@ -1962,14 +1980,14 @@ if (Meteor.isClient) {
 
       form.innerHTML += `
       <div class="row text-center py-1 mb-1">
-        <div class="col-5 p-1 text-light">
+        <div class="col-5 p-1 text-light" aria-hidden="true">
           <b>${key}</b>
         </div>  
         <div class="col-3">
-          <input type="number" class="form-control form-control-sm bg-light" id="inmin-${key}" value="${minValue}">
+          <input type="number" class="form-control form-control-sm bg-light" id="inmin-${key}" value="${minValue}" aria-label="Set custom minimum range value for ${key}. Imported Range is ${minValue} to ${maxValue}">
         </div>
         <div class="col-3">
-          <input type="number" class="form-control form-control-sm bg-light" id="inmax-${key}" value="${maxValue}">
+          <input type="number" class="form-control form-control-sm bg-light" id="inmax-${key}" value="${maxValue}" aria-label="Set custom maximum range value for ${key}. Imported Range is ${minValue} to ${maxValue}">
         </div>
       </div>
       `;

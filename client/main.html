@@ -250,65 +250,69 @@
 
   <!-- Load/Parse Dialog Modal-->  
 
-  <div class="modal fade" id="colselect" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal fade" id="colselect" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-describedby="colselectBody">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5 text-light" id="staticBackdropLabel">{{t 'selectColumnsToImport'}}</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{t 'close'}}"></button>
         </div>
-        <div class="modal-body" style="max-height:45vh;overflow:auto;">
+        <div class="modal-body" id="colselectBody" style="max-height:45vh;overflow:auto;">
           <div class="container">
-            <div id="columnSelector">
-              <form id="columnsForm">
-                {{#each columnOptions}}
-                <div>
-                  <input class="form-check-input" type="checkbox" name="columnchecks" id="col{{@index}}" value="{{@index}}">
-                  <label class="form-check-label text-light" for="col{{@index}}">{{this}}</label>
-                </div>
-                {{/each}}
+              <form id="columnsForm" role="form" aria-labelledby="staticBackdropLabel">
+                <fieldset role="group" aria-labelledby="columnSelectorLegend">
+                  <legend id="columnSelectorLegend" class="visually-hidden">
+                    {{t 'selectColumnsToImport'}}
+                  </legend>
+                  {{#each columnOptions}}
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="columnchecks" id="col{{@index}}" value="{{@index}}" aria-label="{{this}}">
+                    <label class="form-check-label text-light" aria-hidden="true" for="col{{@index}}">{{this}}</label>
+                  </div>
+                  {{/each}}
+                </fieldset>
               </form>
-            </div>
           </div>
         </div>
+        <h2 class="visually-hidden"> Data parse settings </h2>
         <div class="modal-footer">
           <div class="container border border-1 rounded border-dark-subtle">
             <div class="container text-center py-1">
               <div class="row justify-content-between mt-1">
                 <div class="col-5">
                   <div class="form-check text-start">
-                    <input class="form-check-input" type="checkbox" id="checkall">
-                    <label class="form-check-label text-light" for="checkall">{{t 'selectAll'}}</label>
+                    <input class="form-check-input" type="checkbox" id="checkall" aria-label="select all columns for import">
+                    <label class="form-check-label text-light" aria-hidden="true" for="checkall">{{t 'selectAll'}}</label>
                   </div>
                 </div>
                 <div class="col-5 text-end">
                   <div class="form-check text-start">
-                    <input class="form-check-input" type="checkbox" id="selhdrs">
-                    <label class="form-check-label text-light" for="selhdrs">{{t 'useAsHeaders'}}</label>
+                    <input class="form-check-input" type="checkbox" id="selhdrs" aria-label="Use column headers as data headers">
+                    <label class="form-check-label text-light" aria-hidden="true" for="selhdrs">{{t 'useAsHeaders'}}</label>
                   </div>
                 </div>
               </div>
             </div>
             <div class="container text-center" id="rowRangeContainer" style="display:none;">
-              <div class="row mb-2 py-3">
-                <label class="text-light" for="slider" style="margin-bottom: 2%;">{{t 'selectRowsToImport'}}</label>
+              <div class="row mb-2 py-3" aria-hidden="true">
+                <label class="text-light" for="slider" style="margin-bottom: 2%;" aria-hidden="true">{{t 'selectRowsToImport'}}</label>
                 <div id="slider"></div>
               </div>
               <div class="row justify-content-between mt-1 py-2">
                 <div class="col-5 p-0">
-                  <label for="startRowInput" class="text-light">{{t 'startRowLabel'}}</label>
+                  <label for="startRowInput" class="text-light" aria-hidden="true">{{t 'startRowLabel'}}</label>
                   <input type="number" id="startRowInput" min="1" style="width: 50%;">
                 </div>
                 <div class="col-5 p-0">
-                  <label for="endRowInput" class="text-light">{{t 'endRowLabel'}}</label>
+                  <label for="endRowInput" class="text-light" aria-hidden="true">{{t 'endRowLabel'}}</label>
                   <input type="number" id="endRowInput" min="1" style="width: 50%;">
                 </div>
               </div>
             </div>
             <div class="container">
               <div class=" row mt-1 py-3">
-                <label for="keysInput" class="text-light" style="margin-bottom: 2%;">{{t 'defineCustomHeaders'}}</label>
-                <input type="text" id="keysInput" placeholder="e.g., name, val1, count,..." style="width: 80%;">
+                <label for="keysInput" class="text-light" aria-hidden="true" style="margin-bottom: 2%;">{{t 'defineCustomHeaders'}}</label>
+                <input type="text" id="keysInput" placeholder="e.g., name, val1, count,..." style="width: 80%;" aria-label="{{t 'defineCustomHeaders'}}">
               </div>
               <div class="row mb-3 mt-2 justify-content-center">
                 <div class="col-6 offset-md-3">
@@ -323,19 +327,19 @@
   </div>
 
   <!-- InMin/InMax Modal -->
-  <div class="modal fade" id="inminInmaxModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="inminInmaxModalLabel" aria-hidden="true">
+  <div class="modal fade" id="inminInmaxModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="inminInmaxModalLabel" aria-describedby="inminInmaxBody">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5 text-light" id="inminInmaxModalLabel">{{t 'loadOptions'}}</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{t 'close'}}"></button>
         </div>
-        <div class="modal-body" style="max-height: 45vh;overflow:auto;">
+        <div class="modal-body" id="inminInmaxBody" style="max-height: 45vh;overflow:auto;">
           <div class="container">
-            <div class="row justify-content-end m-2">
+            <div class="row justify-content-end m-2" aria-hidden="true" tabindex="-1">
               {{#if showOutput}}
-              <div class="col text-start mb-2 border border-1 rounded border-dark-subtle" id="outcon" style="max-height:35vh;overflow:auto;">
-                <pre class="text-light">{{dictionary}}</pre>
+              <div class="col text-start mb-2 border border-1 rounded border-dark-subtle" id="outcon" style="max-height:35vh;overflow:auto;" aria-hidden="true" tabindex="-1">
+                <pre class="text-light" aria-hidden="true" tabindex="-1">{{dictionary}}</pre>
               </div>
               {{/if}}
             </div>
@@ -348,12 +352,12 @@
                 <h1 class="modal-title fs-6 text-light" id="rangesinputlabel">{{t 'rangeValuesForNumericData'}}</h1>
               </div>
             </div>
-            <form id="inminInmaxForm">
+            <form id="inminInmaxForm" role="form">
               <!-- Dynamic content will be inserted here -->
             </form>
             <div class="row mt-3 mb-3 justify-content-center">
               <div class="col-md-4 text-center">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="submitInminInmax">{{t 'load'}}</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="submitInminInmax" aria-label="Load data">{{t 'load'}}</button>
               </div>
             </div>
           </div>
