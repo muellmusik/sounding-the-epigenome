@@ -1033,7 +1033,15 @@ if (Meteor.isClient) {
     'click #loopButton'(event, instance) {
 
       const currentLoopState = instance.loopPlayback.get();
-      instance.loopPlayback.set(!currentLoopState);
+      const newState = !currentLoopState;     
+      instance.loopPlayback.set(newState);
+
+      const btn = document.getElementById('loopButton');
+      btn.setAttribute('aria-pressed', newState.toString());
+      btn.setAttribute('aria-label', newState ? 'Looping on' : 'Looping off');
+      const status = document.getElementById('loopStatus');
+      status.textContent = newState ? 'Looping on' : 'Looping off';
+
       let allsynths = instance.allSynths;
 
       if (currentLoopState){

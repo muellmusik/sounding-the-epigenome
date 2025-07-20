@@ -86,20 +86,21 @@
         <h2 class="visually-hidden">Playback controls</h2>
         <div class="row mt-2 mb-1 justify-content-start align-items-center">
           <div class="col-lg-4 text-start">
-            <div class="btn-group shadow-lg " role="group" style="margin-bottom: 5%;">
-              <button class="play btn btn-warning btn-lg text-light bg-gradient" title="{{t 'play'}}" aria-label="{{t 'play'}}"><i class="fa fa-play"></i></button>
-              <button class="stop btn btn-warning btn-lg text-light bg-gradient" title="{{t 'stop'}}" aria-label="{{t 'stop'}}"><i class="fa fa-stop"></i></button>
-              <button id="loopButton" class="btn btn-warning btn-lg text-light bg-gradient" title="{{t 'loop'}}" aria-label="{{t 'loop'}}"><i class="fa fa-repeat"></i></button>
-              <button class="store btn btn-warning btn-lg text-light bg-gradient" title="{{t 'store'}}" aria-label="{{t 'store'}}"><i class="fa fa-plus"></i></button>
-              <button class="remove btn btn-warning btn-lg text-light bg-gradient" title="{{t 'remove'}}" aria-label="{{t 'remove'}}"><i class="fa fa-minus"></i></button>
-              <button class="record btn btn-warning btn-lg text-light bg-gradient" title="{{t 'record'}}" aria-label="{{t 'record'}}"><i class="fa fa-circle"></i></button>
+            <div class="btn-group shadow-lg " role="toolbar" style="margin-bottom: 5%;" aria-label="Playback controls">
+              <button class="play btn btn-warning btn-lg text-light bg-gradient" title="{{t 'play'}}" aria-label="{{t 'play'}}" tabindex="9"><i class="fa fa-play" aria-hidden="true"></i></button>
+              <button class="stop btn btn-warning btn-lg text-light bg-gradient" title="{{t 'stop'}}" aria-label="{{t 'stop'}}" tabindex="10"><i class="fa fa-stop" aria-hidden="true"></i></button>
+              <button id="loopButton" class="btn btn-warning btn-lg text-light bg-gradient" title="{{t 'loop'}}" aria-label="Looping off" aria-pressed="false"  tabindex="11"><i class="fa fa-repeat" aria-hidden="true"></i></button>
+              <button class="store btn btn-warning btn-lg text-light bg-gradient" title="{{t 'store'}}" aria-label="{{t 'store'}}"  tabindex="12"><i class="fa fa-plus" aria-hidden="true"></i></button>
+              <button class="remove btn btn-warning btn-lg text-light bg-gradient" title="{{t 'remove'}}" aria-label="{{t 'remove'}}"  tabindex="13"><i class="fa fa-minus" aria-hidden="true"></i></button>
+              <button class="record btn btn-warning btn-lg text-light bg-gradient" title="{{t 'record'}}" aria-label="{{t 'record'}}"  tabindex="14"><i class="fa fa-circle" aria-hidden="true"></i></button>
             </div>
+            <span id="loopStatus" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">Looping off</span>
           </div>
           <div class="col-md-2 text-start">
             <h2 class="visually-hidden">Tempo</h2>
             <div class="input-group-sm mb-4 bg-gradient shadow-lg">
-              <span class="input-group-text text-light shadow-lg" style="font-size: small;">{{t 'tempo'}}</span>
-              <input type="number" id="tempoInput" aria-label="Tempo in beats per minute" class="form-control bg-light shadow-md" value="60" min="30" max="300">
+              <span class="input-group-text text-light shadow-lg" style="font-size: small;" aria-hidden="true">{{t 'tempo'}}</span>
+              <input type="number" id="tempoInput" aria-label="Tempo in beats per minute" class="form-control bg-light shadow-md" value="60" min="30" max="300" tabindex="15">
             </div>
             <h2 class="visually-hidden">Scale/Mode selection</h2>
             <div class="input-group-sm mb-4">
@@ -110,12 +111,12 @@
           <h2 class="visually-hidden">Playback mode</h2>
           <div class="col-sm-2 pt-0 mb-3 text-start" role="group" aria-label="Playback mode">
             <div class="form-check shadow-md">
-              <input class="form-check-input shadow-lg" type="radio" name="chordOrSeq" id="chord" checked data-type="chordbutton">
-              <label class="form-check-label text-light shadow-lg" for="chord">{{t 'chord'}}</label>
+              <input class="form-check-input shadow-lg" type="radio" name="chordOrSeq" id="chord" checked data-type="chordbutton" aria-label="Chord" tabindex="17">
+              <label class="form-check-label text-light shadow-lg" for="chord" aria-hidden="true">{{t 'chord'}}</label>
             </div>
             <div class="form-check shadow-md">
-              <input class="form-check-input shadow-lg" type="radio" name="chordOrSeq" id="sequence" data-type="chordbutton">
-              <label class="form-check-label text-light shadow-lg" for="sequence">{{t 'sequence'}}</label>
+              <input class="form-check-input shadow-lg" type="radio" name="chordOrSeq" id="sequence" data-type="chordbutton" aria-label="Sequence" tabindex="18">
+              <label class="form-check-label text-light shadow-lg" for="sequence" aria-hidden="true">{{t 'sequence'}}</label>
             </div>
           </div>
           
