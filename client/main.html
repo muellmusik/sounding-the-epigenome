@@ -18,7 +18,7 @@
   {{> StEg_app}} 
 </body>
 
-<template name="StEg_app">
+<template name="StEg_app"> 
   <div class="container-fluid text-center min-vh-100 border border-2 border-dark bg-dark bg-gradient">
     <div class="row justify-content-center">
       <div class="col-md-12 m-0 px-3">
@@ -26,7 +26,7 @@
         <div class="row mt-2 mb-3">
           <div class="col-md-8 mb-3 text-start">
             <div class="badge text-bg-warning mt-2 bg-gradient shadow-lg">
-              <h2 class="text-light">{{t 'header'}}</h2>
+              <h1 class="text-light">{{t 'header'}}</h1>
             </div> 
           </div>
           <div class="col-md-4 mb-3 text-end">
@@ -36,6 +36,7 @@
               </div>
               <div>
                 <label for="langswitch" class="text-light shadow-lg" style="font-size: small;">{{t 'languageSwitch'}}</label>
+                <h2 class="visually-hidden">Language selection</h2>
                 <div class="input-group-sm" id="langswitch" aria-label="Language Selection">
                   <button type="button" class="btn btn-light mt-1 shadow-lg" id="lang-en" data-lang="en" tabindex="1" aria-label="English">EN</button>
                   <button type="button" class="btn btn-light mt-1 shadow-lg" id="lang-es" data-lang="es" tabindex="2" aria-label="Español">ES</button>
@@ -45,7 +46,7 @@
           </div>
         </div>
          <!-- Row Selection and Number of Rows -->
-        <div class="row flex-wrap-reverse">
+        <h2 class="visually-hidden">Dataset settings</h2>
           <div class="col-md-3 text-start mb-3 order-md-3">
             <label for="num-rows-select" class="text-light shadow-lg"><b>{{t 'noOfRows'}}</b></label>
             <div class="input-group-sm text-start mb-2 mt-2" style="width: 14vw;">
@@ -82,6 +83,7 @@
           </div>
         </div>
       <!-- Playback Controls and Settings -->
+        <h2 class="visually-hidden">Playback controls</h2>
         <div class="row mt-2 mb-1 justify-content-start align-items-center">
           <div class="col-lg-4 text-start">
             <div class="btn-group shadow-lg " role="group" style="margin-bottom: 5%;">
@@ -94,15 +96,15 @@
             </div>
           </div>
           <div class="col-md-2 text-start">
+            <h2 class="visually-hidden">Tempo</h2>
             <div class="input-group-sm mb-4 bg-gradient shadow-lg">
               <span class="input-group-text text-light shadow-lg" style="font-size: small;">{{t 'tempo'}}</span>
               <input type="number" id="tempoInput" aria-label="Tempo in beats per minute" class="form-control bg-light shadow-md" value="60" min="30" max="300">
             </div>
-            <div class="input-group-sm mb-4" aria-labelledby="scale-select-label">
-              <span id="scale-select-label" class="input-group-text text-light shadow-lg" style="font-size: small;">{{t 'selectScale'}}</span>
-              <select id="scale-select" class="form-control-sm shadow-lg" aria-label="{{t 'selectScale'}}"></select>
+            <h2 class="visually-hidden">Scale/Mode selection</h2>
             </div>
           </div>
+          <h2 class="visually-hidden">Playback mode</h2>
           <div class="col-sm-2 pt-0 mb-3 text-start" role="group" aria-label="Playback mode">
             <div class="form-check shadow-md">
               <input class="form-check-input shadow-lg" type="radio" name="chordOrSeq" id="chord" checked data-type="chordbutton">
@@ -115,7 +117,7 @@
           </div>
           
           <!-- Instrument Selection -->
-
+          <h2 class="visually-hidden">Instrument and effects selection</h2>
           <div class="col-lg-4 mt-0 px-0 mb-3 text-center px-3">
             <div class="row">
               <div class="form-control-sm ">
@@ -143,7 +145,7 @@
         <div class="row">
           
           <!-- Mapping Table -->
-
+          <h2 class="visually-hidden">Mapping table</h2>
           <div class="col-md-7 mb-2 ps-3">
             <div class="table-responsive m-0 bg-dark bg-gradient shadow-lg border border-1 rounded border-dark">
               <table class="table table-sm table-bordered border-dark table-striped m-0 shadow-lg" id="matrix-table" aria-label="Mapping">
@@ -185,7 +187,7 @@
                 </table>
               </div>
             </div>  <!-- End of column 1 -->
-      
+          <h2 class="visually-hidden">Sound Parameters ranges</h2>  
           <div class="col-md-5 mb-2 px-4">
 
             <div class="row mb-2">
@@ -205,7 +207,7 @@
             <div class="row">
 
             <!-- Presets Table-->
-
+              <h2 class="visually-hidden">Stored samples</h2>
               <div class="table-responsive border border-2 border-dark rounded p-0 shadow-lg">
                 <table class="table table-sm table-bordered border-dark m-0 shadow-lg" id="playback-table" aria-label="Stored Samples">
                   <tbody >
