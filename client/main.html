@@ -153,33 +153,37 @@
           <h2 class="visually-hidden">Mapping table</h2>
           <div class="col-md-7 mb-2 ps-3">
             <div class="table-responsive m-0 bg-dark bg-gradient shadow-lg border border-1 rounded border-dark">
-              <table class="table table-sm table-bordered border-dark table-striped m-0 shadow-lg" id="matrix-table" aria-label="Mapping">
-                 <thead class="thead-light">
-                   <tr class="text-center">
-                     <th></th>
+              <table class="table table-sm table-bordered border-dark table-striped m-0 shadow-lg" id="matrix-table"  role="table" aria-labelledby="matrix-caption">
+                 <caption id="matrix-caption" class="visually-hidden">Mapping table: map data fields to sonification parameters</caption>
+                 <thead role="rowgroup" class="thead-light" aria-hidden="true">
+                   <tr role="row" class="text-center">
+                     <th role="columnheader" scope="col" aria-hidden="true"></th>
                      {{ #each field in listParams }}
-                     <th class="text-light">{{field.label}}</th>
+                     <th role="columnheader" scope="col" class="text-light">{{field.label}}</th>
                      {{ /each }}
                    </tr>
                   </thead>
-                  <tbody>
+                  <tbody role="rowgroup">
                     {{#each dataSet in getSonificationData }} <!-- datasets are the collective number of rows imported for sonification from parsed data-->
                     {{#unless @index }}
-                    <tr class="text-center ">
-                      <th colspan="1" class="bg-dark-subtle text-dark" style="position: sticky; left:0px;">
+                    <tr role="row" class="text-center ">
+                      <th role="rowheader" scope="row" colspan="1" class="bg-dark-subtle text-dark" style="position: sticky; left:0px;" aria-hidden="true">
                         {{t 'mapping'}}
                       </th>
                     </tr>
                     {{#each element in dataSet.Data}}<!-- element is each *individual* row-->
                     {{#each blah in (makeKeyValueArray element.type element.data) }}
                     {{#each pair in (getAllFields blah)}}<!-- type dependant key-value pairs-->
-                    <tr class="text-center">
-                       <td class="text-light shadow-lg" style="position: sticky; left:0px;"><b> {{ pair.label}} </b><br/>{{ pair.value }}</td>
+                    <tr role="row" class="text-center">
+                       <th class="text-light shadow-lg" role="rowheader" scope="row" style="position: sticky; left:0px;">
+                          <span class="visually-hidden" role="presentation">Data Parameter {{pair.label}} at {{pair.value}}</span>
+                          <span aria-hidden="true"><b>{{ pair.label}}</b><br/>{{ pair.value }}</span>
+                        </th>
                        {{#each field in listParams }}
-                       <td>
-                         <input type="radio" name="{{ field.key }}-{{ dataSet.Row }}" class="form-check-input" value="{{ pair.value }}" checked
+                       <td role="gridcell">
+                         <input type="radio" role="radio" name="{{ field.key }}-{{ dataSet.Row }}" class="form-check-input" value="{{ pair.value }}" checked
                           id="{{dataSet.Row}}-{{ pair.label }}-{{ field.key }}" data-type="matrixbutton" data-key="{{ pair.label }}"
-                          data-field="{{ field.key }}" data-element="{{dataSet.Row}}" aria-label="Map {{field.label}} to {{ pair.label }} at {{ pair.value }}"/>
+                          data-field="{{ field.key }}" data-element="{{dataSet.Row}}" aria-checked="true" aria-label="Map {{field.label}} to {{ pair.label }} at {{ pair.value }}"/>
                        </td>
                        {{/each }}
                     </tr>
