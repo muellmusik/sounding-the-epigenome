@@ -843,14 +843,15 @@ if (Meteor.isClient) {
       const mappingFunctions = {};
 
       numericColumns.forEach((column) => {
-        const inmin = parseFloat(form.querySelector(`#inmin-${column}`).value);
-        const inmax = parseFloat(form.querySelector(`#inmax-${column}`).value);
+        const inminInput = document.getElementById(`inmin-${column}`);
+        const inmaxInput = document.getElementById(`inmax-${column}`);
+        const inmin = parseFloat(inminInput.value);
+        const inmax = parseFloat(inmaxInput.value);
         mappingFunctions[column] = { inmin, inmax };
       });
 
       for (const key in mappingFunctions) {
-        const inmin = mappingFunctions[key].inmin;
-        const inmax = mappingFunctions[key].inmax;
+        const { inmin, inmax } = mappingFunctions[key];
         specs[key] = ((inmin, inmax) => {
           return function (val, outmin, outmax) {
             return (((val - inmin) / (inmax - inmin)) * (outmax - outmin)) + outmin;
@@ -859,6 +860,7 @@ if (Meteor.isClient) {
       }
 
       datasets['User Uploaded Data'].specs = { ...specs };
+      instance.specs = datasets['User Uploaded Data'].specs;
       instance.selectedDataset.set('User Uploaded Data');
       
       const modal = bootstrap.Modal.getInstance(document.getElementById('inminInmaxModal'));
