@@ -32,10 +32,10 @@
           <div class="col-md-4 mb-3 text-end">
             <div class="hstack gap-4">
               <div class=" input-group-sm ms-auto mt-4">
-                <button id="learn-more-button" class="btn btn-warning mt-1 shadow-lg" tabindex="3" aria-describedby="Click for more information and help on the app">{{t 'learnMore'}}</button>
+                <button id="learn-more-button" class="btn btn-warning mt-1 shadow-lg" tabindex="3" aria-label="{{t 'learnMore'}}. Click for more information and help on the app">{{t 'learnMore'}}</button>
               </div>
               <div>
-                <label for="langswitch" class="text-light shadow-lg" style="font-size: small;">{{t 'languageSwitch'}}</label>
+                <label for="langswitch" class="text-light shadow-lg" style="font-size: small;" aria-hidden="true">{{t 'languageSwitch'}}</label>
                 <h2 class="visually-hidden">Language selection</h2>
                 <div class="input-group-sm" id="langswitch" aria-label="Language Selection">
                   <button type="button" class="btn btn-light mt-1 shadow-lg" id="lang-en" data-lang="en" tabindex="1" aria-label="English">EN</button>
@@ -47,16 +47,17 @@
         </div>
          <!-- Row Selection and Number of Rows -->
         <h2 class="visually-hidden">Dataset settings</h2>
+        <div class="row flex-wrap-reverse" role="group" aria-label="Dataset settings" aria-owns="dataset-select row-select num-rows-select fileInput reset">          
           <div class="col-md-3 text-start mb-3 order-md-3">
-            <label for="num-rows-select" class="text-light shadow-lg"><b>{{t 'noOfRows'}}</b></label>
+            <label for="num-rows-select" class="text-light shadow-lg" aria-hidden="true"><b>{{t 'noOfRows'}}</b></label>
             <div class="input-group-sm text-start mb-2 mt-2" style="width: 14vw;">
-              <input type="number" id="num-rows-select" class="form-control bg-light shadow-lg" value="1" min="1" max="{{maxnumRows}}" tabindex="6">
+              <input type="number" id="num-rows-select" class="form-control bg-light shadow-lg" value="1" min="1" max="{{maxnumRows}}" tabindex="6" aria-label="Number of Rows">
             </div>
           </div>
           <div class="col-md-3 text-start mb-2 order-md-2">
             <div class="input-group-sm mb-2">
-              <label for="row-select" class="text-light shadow-lg"><b>{{t 'startRow'}}</b></label>
-              <select class="form-select mt-2 bg-light shadow-lg" id="row-select" tabindex="5">
+              <label for="row-select" class="text-light shadow-lg" aria-hidden="true"><b>{{t 'startRow'}}</b></label>
+              <select class="form-select mt-2 bg-light shadow-lg" id="row-select" tabindex="5" aria-label="Select Start Row">
                 {{#each row in allRows }}
                 <option value="{{ row.name }}">{{t 'rows' rowNumber=row.name}}</option>
                 {{ /each }}
@@ -65,20 +66,19 @@
           </div>
           <div class="col-md-3 text-start mb-2 order-md-1 flex-nowrap">
             <div class="input-group-sm mb-2">
-              <label for="dataset-select" class="text-light shadow-lg"><b>{{t 'selectDataset'}}</b></label>
-              <select class="form-select mt-2 bg-light shadow-lg" id="dataset-select" tabindex="4">
+              <label for="dataset-select" class="text-light shadow-lg" aria-hidden="true"><b>{{t 'selectDataset'}}</b></label>
+              <select class="form-select mt-2 bg-light shadow-lg" id="dataset-select" tabindex="4" aria-label="Select Dataset">
                 {{#each dataset in datasets }}
                   <option value="{{ dataset }}" {{ isSelectedDataset dataset }}>{{ translatedDatasetName dataset }}</option>
                 {{ /each }}
               </select>
             </div>
           </div>          
-
           <div class="col-md-3 mb-2 text-start order-md-4">
-            <label for="fileInput" class="text-light shadow-lg"><b>{{t 'loadDataFile'}}</b><em style="font-size:x-small;"> (.csv,.tsv,.txt)</em></label>
+            <label for="fileInput" class="text-light shadow-lg" aria-hidden="true"><b>{{t 'loadDataFile'}}</b><em style="font-size:x-small;"> (.csv,.tsv,.txt)</em></label>
             <div class="input-group-sm text-end ">
               <input type="file" class="form-control mt-2 bg-light shadow-lg" id="fileInput" accept=".csv,.tsv,.txt" aria-label="{{t 'loadDataFile'}}" tabindex="7">
-              <button class="btn btn-outline-secondary mt-2 shadow-lg" type="button" id="reset">{{t 'reset'}}</button>
+              <button class="btn btn-outline-secondary mt-2 shadow-lg" type="button" id="reset" aria-label="Reset loaded data file"  tabindex="8">{{t 'reset'}}</button>
             </div>
           </div>
         </div>
