@@ -427,8 +427,9 @@ if (Meteor.isClient) {
       
       radioGroups.forEach((groupName) => {
         const radios = instance.$(`input[name="${groupName}"]`);
-        radios.prop('checked', false); 
-        radios.last().prop('checked', true);
+        radios.prop('checked', false);
+        const choice = Math.floor(Math.random() * radios.length); 
+        $(radios[choice]).prop('checked', true);
       });
     }
 
@@ -436,6 +437,7 @@ if (Meteor.isClient) {
 
     this.autorun(() => {
       instance.parsedata.get();
+      instance.listParams.get();
       Meteor.defer(() => {
         selectLastRadioButtons();
       });
