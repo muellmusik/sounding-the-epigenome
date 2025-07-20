@@ -169,9 +169,34 @@ if (Meteor.isClient) {
         },
         item: function (data, escape) {
           const label = i18next.t('instrumentOptions.' + data.translationKey);
-          return '<div>' + escape(label) + '</div>';
+          return '<div role="option" aria-label = "Instrument: '+escape(label)+'">' + escape(label) + '</div>';
         },
       },
+      onInitialize: function() {
+          const input = this.control_input;
+          const dropdown = this.dropdown;
+          input.tabIndex = 19;
+          input.setAttribute('role', 'combobox');
+          input.setAttribute('aria-autocomplete', 'list');
+          input.setAttribute('aria-haspopup', 'listbox');
+          input.setAttribute('aria-expanded', 'false');
+          input.setAttribute('aria-controls', dropdown.id);
+          dropdown.setAttribute('role', 'listbox');
+          const currentKey = this.getValue();  
+          const currentLabel = i18next.t('instrumentOptions.' + currentKey);
+          input.setAttribute('aria-label', 'Instrument: ' + currentLabel);
+        },
+        onDropdownOpen: function() {
+          this.control_input.setAttribute('aria-expanded', 'true');
+          this.dropdown.querySelectorAll('[data-selectable]').forEach(opt => {
+            const text = opt.textContent.trim();
+            opt.setAttribute('role', 'option');
+            opt.setAttribute('aria-label', `Instrument: ${text}`);
+          });
+        },
+        onDropdownClose: function() {
+          this.control_input.setAttribute('aria-expanded', 'false');
+        },
     });
 
     const selectedInstrument = instance.instrumentType.get() || 'Synth';
@@ -203,6 +228,52 @@ if (Meteor.isClient) {
           return '<div>' + escape(label) + '</div>';
         },
       },
+      onInitialize: function() {
+          const input = this.control_input;
+          const dropdown = this.dropdown;
+          input.tabIndex = 21;
+          input.setAttribute('role', 'combobox');
+          input.setAttribute('aria-autocomplete', 'list');
+          input.setAttribute('aria-haspopup', 'listbox');
+          input.setAttribute('aria-expanded', 'false');
+          input.setAttribute('aria-controls', dropdown.id);
+          dropdown.setAttribute('role', 'listbox');
+          dropdown.querySelectorAll('[data-selectable]').forEach(opt => {
+            opt.setAttribute('role', 'option')
+          });
+
+          const values = this.getValue() || [];
+          if (values.length === 0) {
+            input.setAttribute('aria-label', 'Effects: no effects selected');
+          } else {
+            const labels = values
+              .map(v => i18next.t('effectOptions.' + v))
+              .join(', ');
+            input.setAttribute('aria-label', 'Effects: ' + labels);
+          }
+
+          document.getElementById('effectsStatus').textContent = 'Effects: no effects selected';
+        },
+        onDropdownOpen: function() {
+          this.control_input.setAttribute('aria-expanded', 'true');
+        },
+        onDropdownClose: function() {
+          this.control_input.setAttribute('aria-expanded', 'false');
+        },
+        onChange: function(values) {
+          const status = document.getElementById('effectsStatus');
+              const input = this.control_input;
+              if (values.length === 0) {
+                status.textContent = 'Effects: no effects selected';
+                input.setAttribute('aria-label', 'Effects: no effects selected');
+              } else {
+                const labels = values
+                  .map(v => i18next.t('effectOptions.' + v))
+                  .join(', ');
+                status.textContent = 'Effects: ' + labels;
+                input.setAttribute('aria-label', 'Effects: ' + labels);
+              }
+        }
     });
 
     const selectedEffects = instance.selectedEffects.get() || [];
@@ -230,9 +301,33 @@ if (Meteor.isClient) {
         },
         item: function (data, escape) {
           const label = i18next.t('scaleOptions.' + data.value);
-          return '<div>' + escape(label) + '</div>';
+          return '<div role="option" aria-label="Scale / Mode: '+escape(label)+'">'+ escape(label) + '</div>';
         },
       },
+      onInitialize: function() {
+      const input = this.control_input;
+      const dropdown = this.dropdown;
+      input.tabIndex = 16;
+      input.setAttribute('role', 'combobox');
+      input.setAttribute('aria-autocomplete', 'list');
+      input.setAttribute('aria-haspopup', 'listbox');
+      input.setAttribute('aria-expanded', 'false');
+      input.setAttribute('aria-controls', dropdown.id);
+      dropdown.setAttribute('role', 'listbox');
+      },
+      onDropdownOpen: function() {
+        this.control_input.setAttribute('aria-expanded', 'true');
+        this.dropdown
+      .querySelectorAll('[data-selectable]')
+      .forEach(opt => {
+        const text = opt.textContent.trim();
+        opt.setAttribute('role', 'option');
+        opt.setAttribute('aria-label', `Scale / Mode: ${text}`);
+      });
+      },
+      onDropdownClose: function() {
+        this.control_input.setAttribute('aria-expanded', 'false');
+      }
     });
 
     const selectedScale = instance.selectedScale.get() || 'Chromatic';
@@ -368,9 +463,34 @@ if (Meteor.isClient) {
         },
         item: function (data, escape) {
           const label = i18next.t('synthTypeOptions.' + data.value);
-          return '<div>' + escape(label) + '</div>';
+          return '<div role="option" aria-label="Oscillator Type: ' + escape(label) + '">'+ escape(label) + '</div>';
         },
       },
+
+      onInitialize: function() {
+        const input = this.control_input;
+        const dropdown = this.dropdown;
+        input.tabIndex = 20;
+        input.setAttribute('role', 'combobox');
+        input.setAttribute('aria-autocomplete', 'list');
+        input.setAttribute('aria-haspopup', 'listbox');
+        input.setAttribute('aria-expanded', 'false');
+        input.setAttribute('aria-controls', dropdown.id);
+        dropdown.setAttribute('role', 'listbox');
+      },
+      onDropdownOpen: function() {
+        this.control_input.setAttribute('aria-expanded', 'true');
+        this.dropdown
+        .querySelectorAll('[data-selectable]')
+        .forEach(opt => {
+          const text = opt.textContent.trim();
+          opt.setAttribute('role', 'option');
+          opt.setAttribute('aria-label', `Oscillator Type: ${text}`);
+        });
+      },
+      onDropdownClose: function() {
+        this.control_input.setAttribute('aria-expanded', 'false');
+      }
     });
 
     let selectedSynthType = 'sine';

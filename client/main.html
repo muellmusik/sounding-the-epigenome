@@ -102,6 +102,9 @@
               <input type="number" id="tempoInput" aria-label="Tempo in beats per minute" class="form-control bg-light shadow-md" value="60" min="30" max="300">
             </div>
             <h2 class="visually-hidden">Scale/Mode selection</h2>
+            <div class="input-group-sm mb-4">
+              <span id="scale-select-label" class="input-group-text text-light shadow-lg" style="font-size: small;" aria-hidden="true">{{t 'selectScale'}}</span>
+              <select id="scale-select" class="form-control-sm shadow-lg" aria-label="Scale/ Mode: {{t 'selectScale'}}" aria-hidden="true" tabindex="-1"></select>
             </div>
           </div>
           <h2 class="visually-hidden">Playback mode</h2>
@@ -121,9 +124,9 @@
           <div class="col-lg-4 mt-0 px-0 mb-3 text-center px-3">
             <div class="row">
               <div class="form-control-sm ">
-                <label id="instrument-select-label" for="instrument-select" class="text-light shadow-lg"><b>{{t 'instrument'}}</b></label>
-              <select id="instrument-select" data-placeholder="{{t 'selectInstrumentPlaceholder'}}" class="shadow-lg" aria-labelledby="instrument-select-label">
-              </select>
+                <label id="instrument-select-label" for="instrument-select" class="text-light shadow-lg" aria-hidden="true"><b>{{t 'instrument'}}</b></label>
+                <select id="instrument-select" data-placeholder="{{t 'selectInstrumentPlaceholder'}}" class="shadow-lg" aria-labelledby="instrument-select-label" aria-hidden="true" tabindex="-1">
+                </select>
               </div>
             </div>
             <!-- Oscillator Type Selection for Synths -->
@@ -133,9 +136,10 @@
             <!-- Effects Selection -->
             <div class="row">
               <div class="form-control-sm">
-                <label id="effects-select-label" for="effects-select" class="text-light shadow-lg"><b>{{t 'effects'}}</b></label>
-                <select class="form-control-sm shadow-lg" id="effects-select" multiple data-placeholder="{{t 'selectEffectsPlaceholder'}}" aria-labelledby="effects-select-label">
+                <label id="effects-select-label" for="effects-select" class="text-light shadow-lg" aria-hidden="true"><b>{{t 'effects'}}</b></label>
+                <select class="form-control-sm shadow-lg" id="effects-select" multiple data-placeholder="{{t 'selectEffectsPlaceholder'}}" aria-labelledby="effects-select-label" aria-hidden="true" tabindex="-1">
                 </select>
+                <span id="effectsStatus" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">Effects: no effects selected</span>
               </div>
             </div>
           </div>
@@ -357,8 +361,8 @@
 <template name="OscillatorTypeSelect">
   <div class="row">
     <div class="form-control-sm">
-      <label id="synthtype-select-label" for="synthtype-select" class="text-light shadow-lg"><b>{{t 'oscillatorType'}}</b></label>
-      <select id="synthtype-select" data-placeholder="{{t 'oscillatorTypePlaceholder'}}" class="shadow-lg" aria-labelledby="synthtype-select-label">
+      <label id="synthtype-select-label" for="synthtype-select" class="text-light shadow-lg" aria-hidden="true"><b>{{t 'oscillatorType'}}</b></label>
+      <select id="synthtype-select" data-placeholder="{{t 'oscillatorTypePlaceholder'}}" class="shadow-lg" aria-labelledby="synthtype-select-label" aria-hidden="true" tabindex="-1">
       </select>
     </div>
   </div>
