@@ -587,14 +587,9 @@ if (Meteor.isClient) {
     },
 
     'click #learn-more-button'(event, instance) {
-      const currentLanguage = i18next.language || 'en';
-      let url;
-      if (currentLanguage === 'es') {
-        url = './Support_website/StEg_support_website_es.html';
-      } else {
-        url = './Support_website/StEg_support_website_en.html';
-      }
-      window.open(url, '_blank'); // Open in a new tab
+      const lang = (i18next.language || 'en').split('-')[0];
+      const url  = `./Support_website/StEg_support_website.html?lang=${lang}`;
+      window.open(url, '_blank');
     },
     
     'change #fileInput'(event, instance) {

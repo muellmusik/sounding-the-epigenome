@@ -210,8 +210,8 @@
 					</section>
 					<section id="about" data-markdown style="text-align: center; font-size: 0.70em; overflow:auto !important; max-height: 100%;">
 						<textarea data-template>
-								<video class="stretch" controls data-autoplay src="media/StEg_demo_video.mp4" style="background:none; border:none; box-shadow:none; width: clamp(500px, 55vw, 100vw); max-width: 100%; height:auto;" title="IPSOS app"><em>Oops! Sorry, it seems your browser is old! Try updating or using a different one to play this video.</em></video>
-								<figcaption style="text-align: center; opacity:0.5; font-size:0.5em;">TURN YOUR SOUND ON!</figcaption>
+								<video class="stretch" controls src="media/StEg_demo_video.mp4" style="background:none; border:none; box-shadow:none; width: clamp(500px, 55vw, 100vw); max-width: 100%; height:auto;" title="IPSOS app"><em>Oops! Sorry, it seems your browser is old! Try updating or using a different one to play this video.</em></video>
+								<figcaption data-i18n="turnonsound" style="text-align: center; opacity:0.5; font-size:0.5em;">TURN YOUR SOUND ON!</figcaption>
 								<br>
 								<!-- Link to the app here -->
 								<div data-i18n="discussion" style="text-align: center; font-size: clamp(1.35rem, 1vw, 2rem);">The <a href="https://beast.cal.bham.ac.uk/sounding/index.html" style="color:#d1a727" target="_blank">Sounding the Epigenome App</a> was developed as part of a collaboration between the University of Birmingham, MEMBRA Treescape project, Universidad de los Andes and Centro Nacional de Las Artes (Bogota, Columbia). This project utilises the practise of data sonification to bring awareness to and engagement with science. Through workshops and activities supporting the creation of bespoke tools and resources, it will create impact for a variety of users, including artists, educators, the science interested public, and the visually-impaired.<br><br>
@@ -923,21 +923,25 @@
 			// - https://github.com/hakimel/reveal.js#dependencies
 
 			// - The menu UI custom code, contains Link to the app under 'content' section
+			const START_LANG = (new URLSearchParams(window.location.search).get('lang') || 'en').split('-')[0].toLowerCase();
+
+			const langSel = document.querySelector('.langchooser');
+			if (langSel) langSel.value = START_LANG;
+
 			function smoothLanguageChange(lang) {
 			// Get all i18n elements
 			const elements = document.querySelectorAll('[data-i18n]');
-			// Fade out
+			
 			elements.forEach(el => el.classList.add('lang-fade'));
 			setTimeout(() => {
-				// Switch language
-				const sel = document.querySelector('.langchooser');
-				sel.value = lang;
-				sel.dispatchEvent(new Event('change'));
-				// Fade in
+				
+				langSel.value = lang;
+				langSel.dispatchEvent(new Event('change', {bubbles: true}));
+				
 				setTimeout(() => {
 				elements.forEach(el => el.classList.remove('lang-fade'));
-				}, 2); // short delay to let DOM update text
-			}, 150); // matches CSS transition duration
+				}, 2); 
+			}, 150); 
 			}
 
 			document.getElementById('lang-en').addEventListener('click', () => smoothLanguageChange('en'));
@@ -945,15 +949,15 @@
 
 			document.querySelectorAll('#slide-menu-header button[data-target]').forEach(btn=>{
 				btn.addEventListener('click',()=>{
-				// set active tab button
+				
 				document.querySelectorAll('#slide-menu-header button').forEach(b=>b.classList.remove('active'))
 				btn.classList.add('active');
-				// show corresponding panel
+				
 				document.querySelectorAll('.slide-menu-panel').forEach(p=>p.classList.remove('active'));
 				document.getElementById(btn.dataset.target).classList.add('active');
 				});
 			});
-			// open/close logic (unchanged)
+			
 			document.getElementById('slide-menu-toggle').addEventListener('click',()=>{
 				document.getElementById('slide-menu').classList.toggle('open');
 			});
@@ -989,12 +993,12 @@
 				maxScale: 1.0,
 				
 				internation: {
-					locale:        'en',           
+					locale:        'START_LANG',           
 					localename:    'English',        
 					langattribute: 'data-i18n',       
 					switchselector: '.langchooser',   
 					html:			true,              
-					makejson:		true,             
+					makejson:		false,             
 					observe: 		true,
 					languages: {
 						en: { name: "English", dictionary: "en.json" },
@@ -1003,6 +1007,12 @@
 				},
 
 				plugins: [ Internation, RevealMarkdown, RevealHighlight, RevealNotes, RevealZoom  ]
+			});
+			Reveal.on('ready', () => {
+				if (langSel && langSel.value !== START_LANG) {
+					langSel.value = START_LANG;
+					langSel.dispatchEvent(new Event('change', { bubbles: true }));
+				}
 			});
 		</script>
 	</body>

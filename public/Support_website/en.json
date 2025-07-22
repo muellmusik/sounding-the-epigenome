@@ -32,6 +32,7 @@
         },
         "about": {
             "discussion": "The <a href=\"https://beast.cal.bham.ac.uk/sounding/index.html\"style=\"color:#d1a727\"target=\"_blank\">Sounding the Epigenome App</a> was developed as part of a collaboration between the University of Birmingham, MEMBRA Treescape project, Universidad de los Andes and Centro Nacional de Las Artes (Bogota, Columbia). This project utilises the practise of data sonification to bring awareness to and engagement with science. Through workshops and activities supporting the creation of bespoke tools and resources, it will create impact for a variety of users, including artists, educators, the science interested public, and the visually-impaired.<br><br>Here you can explore and play! The website also holds information on the science of Epigenetics, Data Sonification and Sound Synthesis, if you would like to discover more about the theory behind the app.<br><br><br>Use the UP/DOWN buttons on your keyboard or at the bottom-right corner of the screen to navigate between sections within a topic.<p>Use the RIGHT/LEFT buttons to navigate between topics.</p><p>Use the menu button at the bottom-left corner of the screen to access any of the resources.                            </p>",
+            "turnonsound": "TURN YOUR SOUND ON!",
             "instructions": "Click here for detailed instructions on how to use the app!"
         },
         "credits": {
