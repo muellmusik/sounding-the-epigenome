@@ -177,9 +177,34 @@ if (Meteor.isClient) {
         },
         item: function (data, escape) {
           const label = i18next.t('instrumentOptions.' + data.translationKey);
-          return '<div>' + escape(label) + '</div>';
+          return '<div role="option" aria-label = "Instrument: '+escape(label)+'">' + escape(label) + '</div>';
         },
       },
+      onInitialize: function() {
+          const input = this.control_input;
+          const dropdown = this.dropdown;
+          input.tabIndex = 19;
+          input.setAttribute('role', 'combobox');
+          input.setAttribute('aria-autocomplete', 'list');
+          input.setAttribute('aria-haspopup', 'listbox');
+          input.setAttribute('aria-expanded', 'false');
+          input.setAttribute('aria-controls', dropdown.id);
+          dropdown.setAttribute('role', 'listbox');
+          const currentKey = this.getValue();  
+          const currentLabel = i18next.t('instrumentOptions.' + currentKey);
+          input.setAttribute('aria-label', 'Instrument: ' + currentLabel);
+        },
+        onDropdownOpen: function() {
+          this.control_input.setAttribute('aria-expanded', 'true');
+          this.dropdown.querySelectorAll('[data-selectable]').forEach(opt => {
+            const text = opt.textContent.trim();
+            opt.setAttribute('role', 'option');
+            opt.setAttribute('aria-label', `Instrument: ${text}`);
+          });
+        },
+        onDropdownClose: function() {
+          this.control_input.setAttribute('aria-expanded', 'false');
+        },
     });
 
     const selectedInstrument = instance.instrumentType.get() || 'Synth';
@@ -211,6 +236,52 @@ if (Meteor.isClient) {
           return '<div>' + escape(label) + '</div>';
         },
       },
+      onInitialize: function() {
+          const input = this.control_input;
+          const dropdown = this.dropdown;
+          input.tabIndex = 21;
+          input.setAttribute('role', 'combobox');
+          input.setAttribute('aria-autocomplete', 'list');
+          input.setAttribute('aria-haspopup', 'listbox');
+          input.setAttribute('aria-expanded', 'false');
+          input.setAttribute('aria-controls', dropdown.id);
+          dropdown.setAttribute('role', 'listbox');
+          dropdown.querySelectorAll('[data-selectable]').forEach(opt => {
+            opt.setAttribute('role', 'option')
+          });
+
+          const values = this.getValue() || [];
+          if (values.length === 0) {
+            input.setAttribute('aria-label', 'Effects: no effects selected');
+          } else {
+            const labels = values
+              .map(v => i18next.t('effectOptions.' + v))
+              .join(', ');
+            input.setAttribute('aria-label', 'Effects: ' + labels);
+          }
+
+          document.getElementById('effectsStatus').textContent = 'Effects: no effects selected';
+        },
+        onDropdownOpen: function() {
+          this.control_input.setAttribute('aria-expanded', 'true');
+        },
+        onDropdownClose: function() {
+          this.control_input.setAttribute('aria-expanded', 'false');
+        },
+        onChange: function(values) {
+          const status = document.getElementById('effectsStatus');
+              const input = this.control_input;
+              if (values.length === 0) {
+                status.textContent = 'Effects: no effects selected';
+                input.setAttribute('aria-label', 'Effects: no effects selected');
+              } else {
+                const labels = values
+                  .map(v => i18next.t('effectOptions.' + v))
+                  .join(', ');
+                status.textContent = 'Effects: ' + labels;
+                input.setAttribute('aria-label', 'Effects: ' + labels);
+              }
+        }
     });
 
     const selectedEffects = instance.selectedEffects.get() || [];
@@ -239,9 +310,33 @@ if (Meteor.isClient) {
         },
         item: function (data, escape) {
           const label = i18next.t('scaleOptions.' + data.value);
-          return '<div>' + escape(label) + '</div>';
+          return '<div role="option" aria-label="Scale / Mode: '+escape(label)+'">'+ escape(label) + '</div>';
         },
       },
+      onInitialize: function() {
+      const input = this.control_input;
+      const dropdown = this.dropdown;
+      input.tabIndex = 16;
+      input.setAttribute('role', 'combobox');
+      input.setAttribute('aria-autocomplete', 'list');
+      input.setAttribute('aria-haspopup', 'listbox');
+      input.setAttribute('aria-expanded', 'false');
+      input.setAttribute('aria-controls', dropdown.id);
+      dropdown.setAttribute('role', 'listbox');
+      },
+      onDropdownOpen: function() {
+        this.control_input.setAttribute('aria-expanded', 'true');
+        this.dropdown
+      .querySelectorAll('[data-selectable]')
+      .forEach(opt => {
+        const text = opt.textContent.trim();
+        opt.setAttribute('role', 'option');
+        opt.setAttribute('aria-label', `Scale / Mode: ${text}`);
+      });
+      },
+      onDropdownClose: function() {
+        this.control_input.setAttribute('aria-expanded', 'false');
+      }
     });
 
     const selectedScale = instance.selectedScale.get() || 'Microtonal';
@@ -249,11 +344,11 @@ if (Meteor.isClient) {
 
     const currentLanguage = i18next.language || 'en';
     if (currentLanguage === 'en') {
-      $('#lang-en').removeClass('btn-warning').addClass('btn-success');
-      $('#lang-es').removeClass('btn-success').addClass('btn-warning');
+      $('#lang-en').removeClass('btn-light').addClass('btn-warning');
+      $('#lang-es').removeClass('btn-warning').addClass('btn-light');
     } else {
-      $('#lang-es').removeClass('btn-warning').addClass('btn-success');
-      $('#lang-en').removeClass('btn-success').addClass('btn-warning');
+      $('#lang-es').removeClass('btn-light').addClass('btn-warning');
+      $('#lang-en').removeClass('btn-warning').addClass('btn-light');
     }
 
     this.autorun(() => {
@@ -341,8 +436,9 @@ if (Meteor.isClient) {
       
       radioGroups.forEach((groupName) => {
         const radios = instance.$(`input[name="${groupName}"]`);
-        radios.prop('checked', false); 
-        radios.last().prop('checked', true);
+        radios.prop('checked', false);
+        const choice = Math.floor(Math.random() * radios.length); 
+        $(radios[choice]).prop('checked', true);
       });
     }
 
@@ -350,6 +446,7 @@ if (Meteor.isClient) {
 
     this.autorun(() => {
       instance.parsedata.get();
+      instance.listParams.get();
       Meteor.defer(() => {
         selectLastRadioButtons();
       });
@@ -377,9 +474,34 @@ if (Meteor.isClient) {
         },
         item: function (data, escape) {
           const label = i18next.t('synthTypeOptions.' + data.value);
-          return '<div>' + escape(label) + '</div>';
+          return '<div role="option" aria-label="Oscillator Type: ' + escape(label) + '">'+ escape(label) + '</div>';
         },
       },
+
+      onInitialize: function() {
+        const input = this.control_input;
+        const dropdown = this.dropdown;
+        input.tabIndex = 20;
+        input.setAttribute('role', 'combobox');
+        input.setAttribute('aria-autocomplete', 'list');
+        input.setAttribute('aria-haspopup', 'listbox');
+        input.setAttribute('aria-expanded', 'false');
+        input.setAttribute('aria-controls', dropdown.id);
+        dropdown.setAttribute('role', 'listbox');
+      },
+      onDropdownOpen: function() {
+        this.control_input.setAttribute('aria-expanded', 'true');
+        this.dropdown
+        .querySelectorAll('[data-selectable]')
+        .forEach(opt => {
+          const text = opt.textContent.trim();
+          opt.setAttribute('role', 'option');
+          opt.setAttribute('aria-label', `Oscillator Type: ${text}`);
+        });
+      },
+      onDropdownClose: function() {
+        this.control_input.setAttribute('aria-expanded', 'false');
+      }
     });
 
     let selectedSynthType = 'sine';
@@ -623,14 +745,33 @@ if (Meteor.isClient) {
           fileContent.set(e.target.result);
           instance.columnOptions.set(parseColumns(e.target.result));
           const rows = (e.target.result).trim().split('\n');
+          const maxRow = rows.length;
 
           const rowRangeContainer = document.getElementById('rowRangeContainer');
           rowRangeContainer.style.display = 'block';
+
+          const startRowInput = document.getElementById('startRowInput');
+          const endRowInput = document.getElementById('endRowInput');
+
+          startRowInput.setAttribute('max', maxRow);
+          startRowInput.setAttribute('aria-valuemin', '1');
+          startRowInput.setAttribute('aria-valuemax', String(maxRow));
+          startRowInput.setAttribute('aria-label', 'Set start row number. Range: 1 to' + String(maxRow));
+
+          endRowInput.setAttribute('max', maxRow);
+          endRowInput.setAttribute('aria-valuemin', '1');
+          endRowInput.setAttribute('aria-valuemax', String(maxRow));
+          endRowInput.setAttribute('aria-label', 'Set end row number. Range: 1 to' + String(maxRow));
 
           const slider = document.getElementById('slider');
           sliderInstance = noUiSlider.create(slider, {
             start: [1, rows.length],
             connect: true,
+            handles: 2,
+            handleAttributes: [
+              { 'tabindex': -1 },
+              { 'tabindex': -1 },
+            ],
             range: {
               'min': 1,
               'max': rows.length
@@ -639,8 +780,7 @@ if (Meteor.isClient) {
           });
 
           // Sync the slider with the text inputs
-          const startRowInput = document.getElementById('startRowInput');
-          const endRowInput = document.getElementById('endRowInput');
+
 
           sliderInstance.on('update', function (values) {
             startRowInput.value = Math.round(values[0]);
@@ -674,11 +814,11 @@ if (Meteor.isClient) {
           Session.set('currentLanguage', selectedLanguage);
           // Update button classes
           if (selectedLanguage === 'en') {
-            $('#lang-en').removeClass('btn-warning').addClass('btn-success');
-            $('#lang-es').removeClass('btn-success').addClass('btn-warning');
+            $('#lang-en').removeClass('btn-light').addClass('btn-warning');
+            $('#lang-es').removeClass('btn-warning').addClass('btn-light');
           } else {
-            $('#lang-es').removeClass('btn-warning').addClass('btn-success');
-            $('#lang-en').removeClass('btn-success').addClass('btn-warning');
+            $('#lang-es').removeClass('btn-light').addClass('btn-warning');
+            $('#lang-en').removeClass('btn-warning').addClass('btn-light');
           }
         });
       },
@@ -714,14 +854,15 @@ if (Meteor.isClient) {
       const mappingFunctions = {};
 
       numericColumns.forEach((column) => {
-        const inmin = parseFloat(form.querySelector(`#inmin-${column}`).value);
-        const inmax = parseFloat(form.querySelector(`#inmax-${column}`).value);
+        const inminInput = document.getElementById(`inmin-${column}`);
+        const inmaxInput = document.getElementById(`inmax-${column}`);
+        const inmin = parseFloat(inminInput.value);
+        const inmax = parseFloat(inmaxInput.value);
         mappingFunctions[column] = { inmin, inmax };
       });
 
       for (const key in mappingFunctions) {
-        const inmin = mappingFunctions[key].inmin;
-        const inmax = mappingFunctions[key].inmax;
+        const { inmin, inmax } = mappingFunctions[key];
         specs[key] = ((inmin, inmax) => {
           return function (val, outmin, outmax) {
             return (((val - inmin) / (inmax - inmin)) * (outmax - outmin)) + outmin;
@@ -730,6 +871,7 @@ if (Meteor.isClient) {
       }
 
       datasets['User Uploaded Data'].specs = { ...specs };
+      instance.specs = datasets['User Uploaded Data'].specs;
       instance.selectedDataset.set('User Uploaded Data');
       
       const modal = bootstrap.Modal.getInstance(document.getElementById('inminInmaxModal'));
@@ -924,7 +1066,15 @@ if (Meteor.isClient) {
     'click #loopButton'(event, instance) {
 
       const currentLoopState = instance.loopPlayback.get();
-      instance.loopPlayback.set(!currentLoopState);
+      const newState = !currentLoopState;     
+      instance.loopPlayback.set(newState);
+
+      const btn = document.getElementById('loopButton');
+      btn.setAttribute('aria-pressed', newState.toString());
+      btn.setAttribute('aria-label', newState ? 'Looping on' : 'Looping off');
+      const status = document.getElementById('loopStatus');
+      status.textContent = newState ? 'Looping on' : 'Looping off';
+
       let allsynths = instance.allSynths;
 
       if (currentLoopState){
@@ -1861,7 +2011,7 @@ function startCrossfadeLoop(audioBuffer, ind, playButton, instance) {
   function populateInminInmaxForm(numericColumnRanges) {
     
     const form = document.getElementById('inminInmaxForm');
-    form.innerHTML = '<div class="row text-center mb-1"> <div class="col-3 mb-1 offset-md-5 text-light "><b>Min:</b></div> <div class="col-3 mb-1 text-light"><b>Max:</b></div></div>'; // Clear any existing content
+    form.innerHTML = '<div class="row text-center mb-1"> <div class="col-3 mb-1 offset-md-5 text-light " aria-hidden="true"><b>Min:</b></div> <div class="col-3 mb-1 text-light" aria-hidden="true"><b>Max:</b></div></div>'; // Clear any existing content
 
     Object.keys(numericColumnRanges).forEach((key) => {
       const minValue = numericColumnRanges[key].min;
@@ -1869,14 +2019,14 @@ function startCrossfadeLoop(audioBuffer, ind, playButton, instance) {
 
       form.innerHTML += `
       <div class="row text-center py-1 mb-1">
-        <div class="col-5 p-1 text-light">
+        <div class="col-5 p-1 text-light" aria-hidden="true">
           <b>${key}</b>
         </div>  
         <div class="col-3">
-          <input type="number" class="form-control form-control-sm bg-light" id="inmin-${key}" value="${minValue}">
+          <input type="number" class="form-control form-control-sm bg-light" id="inmin-${key}" value="${minValue}" aria-label="Set custom minimum range value for ${key}. Imported Range is ${minValue} to ${maxValue}">
         </div>
         <div class="col-3">
-          <input type="number" class="form-control form-control-sm bg-light" id="inmax-${key}" value="${maxValue}">
+          <input type="number" class="form-control form-control-sm bg-light" id="inmax-${key}" value="${maxValue}" aria-label="Set custom maximum range value for ${key}. Imported Range is ${minValue} to ${maxValue}">
         </div>
       </div>
       `;
